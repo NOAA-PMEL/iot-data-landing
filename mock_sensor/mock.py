@@ -178,33 +178,38 @@ class TestSensor1D(MockSensor):
         "make": "MockCo",
         "model": "Sensor_1",
         "variables": {
-            "time": {"long_name": "Time"},
+            "time": {"long_name": "Time", "dimension": ["time"]},
             "latitude": {
                 "long_name": "Latitude",
                 "data_type": "double",
                 "units": "degrees_north",
+                "dimension": ["time"]
             },
             "longitude": {
                 "long_name": "Longitude",
                 "data_type": "double",
                 "units": "degrees_east",
+                "dimension": ["time"]
             },
             "altitude": {"long_name": "Altitude", "data_type": "double", "units": "m"},
             "temperature": {
                 "long_name": "Temperature",
                 "data_type": "double",
                 "units": "degree_C",
+                "dimension": ["time"]
             },
             "rh": {"long_name": "RH", "data_type": "double", "units": "percent"},
             "wind_speed": {
                 "long_name": "Wind Speed",
                 "data_type": "double",
                 "units": "m s-1",
+                "dimension": ["time"]
             },
             "wind_direction": {
                 "long_name": "Wind Direction",
                 "data_type": "double",
                 "units": "degree",
+                "dimension": ["time"]
             },
         },
     }
