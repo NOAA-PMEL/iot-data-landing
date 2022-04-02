@@ -43,36 +43,45 @@ For now, this is a starting point for the payload and we can modify as necessary
         "source": "/sensor/MockCo/Sensor_1/1234",
         "datacontenttype": "application/json; charset=utf-8",
         "specversion": "1.0",
-        "id": "024939e7-23ec-4874-8b2f-72dc875c7657",
-        "time": "2022-04-01T22:40:42.001203+00:00"
+        "id": "17d23319-4b10-4578-afc6-878c75081b11",
+        "time": "2022-04-02T16:39:53.003270+00:00"
     },
     "data": {
         "data": {
-            "time": "2022-04-01T22:40:42Z",
-            "latitude": 9.96,
-            "longitude": -150.026,
-            "altitude": 109.373,
-            "temperature": 26.37,
-            "rh": 60.112,
-            "wind_speed": 10.383,
-            "wind_dir": 84.229
+            "time": "2022-04-02T16:39:53Z",
+            "latitude": 9.927,
+            "longitude": -150.044,
+            "altitude": 99.707,
+            "temperature": 24.634,
+            "rh": 57.185,
+            "wind_speed": 5.474,
+            "wind_dir": 81.401
         },
         "metadata": {
             "make": "MockCo",
             "model": "Sensor_1",
             "variables": {
                 "time": {
-                    "long_name": "Time"
+                    "long_name": "Time",
+                    "dimension": [
+                        "time"
+                    ]
                 },
                 "latitude": {
                     "long_name": "Latitude",
                     "data_type": "double",
-                    "units": "degrees_north"
+                    "units": "degrees_north",
+                    "dimension": [
+                        "time"
+                    ]
                 },
                 "longitude": {
                     "long_name": "Longitude",
                     "data_type": "double",
-                    "units": "degrees_east"
+                    "units": "degrees_east",
+                    "dimension": [
+                        "time"
+                    ]
                 },
                 "altitude": {
                     "long_name": "Altitude",
@@ -82,7 +91,10 @@ For now, this is a starting point for the payload and we can modify as necessary
                 "temperature": {
                     "long_name": "Temperature",
                     "data_type": "double",
-                    "units": "degree_C"
+                    "units": "degree_C",
+                    "dimension": [
+                        "time"
+                    ]
                 },
                 "rh": {
                     "long_name": "RH",
@@ -92,12 +104,18 @@ For now, this is a starting point for the payload and we can modify as necessary
                 "wind_speed": {
                     "long_name": "Wind Speed",
                     "data_type": "double",
-                    "units": "m s-1"
+                    "units": "m s-1",
+                    "dimension": [
+                        "time"
+                    ]
                 },
                 "wind_direction": {
                     "long_name": "Wind Direction",
                     "data_type": "double",
-                    "units": "degree"
+                    "units": "degree",
+                    "dimension": [
+                        "time"
+                    ]
                 }
             }
         }

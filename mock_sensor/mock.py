@@ -104,13 +104,16 @@ class MockSensor(abc.ABC):
 
         # start loops
         self.task_list.append(asyncio.get_running_loop().create_task(self.data_loop()))
-        self.task_list.append(asyncio.get_running_loop().create_task(self.ce_loop()))
-        self.task_list.append(asyncio.get_running_loop().create_task(self.send_loop()))
+        asyncio.get_running_loop().create_task(self.ce_loop())
+        asyncio.get_running_loop().create_task(self.send_loop())
 
         while self.doRun:
             pass
             await asyncio.sleep(1)
 
+        # this only shuts down the data_loop to allow last message(s) to go through
+        for task in self.task_list:
+            task.cancel()
         print("shutdown")
 
     # derived classes define how data is created
@@ -336,11 +339,6 @@ def time_to_next(sec):
     delta = sec - (math.fmod(now, sec))
     return delta
 
-def main_shutdown(sensors):
-
-    for sensor in sensors:
-        sensor.shutdown()
-
 async def main_run(sensors):
 
     # start all sensors
@@ -354,7 +352,7 @@ async def main_run(sensors):
 
     # wait for tasks to complete
     logging.getLogger().info("shutting down - wait for tasks to finish")
-    await asyncio.sleep(5.0)
+    await asyncio.sleep(2.0)
     
 async def main():
     event_loop = asyncio.get_running_loop()
