@@ -1,3 +1,4 @@
+import abc
 from datetime import datetime
 import math
 import os
@@ -17,46 +18,45 @@ import logging
 import time
 
 
-class MockSensor:
+class MockSensor(abc.ABC):
 
-    # doRun = False
     isofmt = "%Y-%m-%dT%H:%M:%SZ"
 
-    # define the sensor data
-    metadata = {
-        "make": "MockCo",
-        "model": "Sensor_1",
-        "variables": {
-            "time": {"long_name": "Time"},
-            "latitude": {
-                "long_name": "Latitude",
-                "data_type": "double",
-                "units": "degrees_north",
-            },
-            "longitude": {
-                "long_name": "Longitude",
-                "data_type": "double",
-                "units": "degrees_east",
-            },
-            "altitude": {"long_name": "Altitude", "data_type": "double", "units": "m"},
-            "temperature": {
-                "long_name": "Temperature",
-                "data_type": "double",
-                "units": "degree_C",
-            },
-            "rh": {"long_name": "RH", "data_type": "double", "units": "percent"},
-            "wind_speed": {
-                "long_name": "Wind Speed",
-                "data_type": "double",
-                "units": "m s-1",
-            },
-            "wind_direction": {
-                "long_name": "Wind Direction",
-                "data_type": "double",
-                "units": "degree",
-            },
-        },
-    }
+    # derived classes must define the sensor data
+    # metadata = {
+    #     "make": "MockCo",
+    #     "model": "Sensor_1",
+    #     "variables": {
+    #         "time": {"long_name": "Time"},
+    #         "latitude": {
+    #             "long_name": "Latitude",
+    #             "data_type": "double",
+    #             "units": "degrees_north",
+    #         },
+    #         "longitude": {
+    #             "long_name": "Longitude",
+    #             "data_type": "double",
+    #             "units": "degrees_east",
+    #         },
+    #         "altitude": {"long_name": "Altitude", "data_type": "double", "units": "m"},
+    #         "temperature": {
+    #             "long_name": "Temperature",
+    #             "data_type": "double",
+    #             "units": "degree_C",
+    #         },
+    #         "rh": {"long_name": "RH", "data_type": "double", "units": "percent"},
+    #         "wind_speed": {
+    #             "long_name": "Wind Speed",
+    #             "data_type": "double",
+    #             "units": "m s-1",
+    #         },
+    #         "wind_direction": {
+    #             "long_name": "Wind Direction",
+    #             "data_type": "double",
+    #             "units": "degree",
+    #         },
+    #     },
+    # }
 
     def __init__(
         self,
@@ -89,6 +89,10 @@ class MockSensor:
         self.doRun = False
 
         self.task_list = []
+
+    @abc.abstractmethod
+    def get_metadata(self):
+        pass
 
     async def run(self):
         self.doRun = True
@@ -137,14 +141,15 @@ class MockSensor:
         # define type and source here
         attributes = {
             "type": f"gov.noaa.pmel.acg.data.insert.envds.v2",
-            "source": f"/sensor/{MockSensor.metadata['make']}/{MockSensor.metadata['model']}/{self.sn}",
+            "source": f"/sensor/{self.get_metadata()['make']}/{self.get_metadata()['model']}/{self.sn}",
             "datacontenttype" : "application/json; charset=utf-8",
         }
 
         # get data from queue, package into cloudevent, send via mqtt
         while True:
             data = await self.data_buffer.get()
-            payload = {"data": data, "metadata": MockSensor.metadata}
+            # payload = {"data": data, "metadata": self.get_metadata()}
+            payload = {"data": data}
             ce = CloudEvent(attributes=attributes, data=payload)
             self.logger.debug("ce_loop: cloudevent = %s", ce)
             await self.send_buffer.put(ce)
@@ -166,6 +171,49 @@ class MockSensor:
     def shutdown(self):
         self.logger.info("Shutting down...")
         self.doRun = False
+
+class TestSensor1D(MockSensor):
+
+    metadata = {
+        "make": "MockCo",
+        "model": "Sensor_1",
+        "variables": {
+            "time": {"long_name": "Time"},
+            "latitude": {
+                "long_name": "Latitude",
+                "data_type": "double",
+                "units": "degrees_north",
+            },
+            "longitude": {
+                "long_name": "Longitude",
+                "data_type": "double",
+                "units": "degrees_east",
+            },
+            "altitude": {"long_name": "Altitude", "data_type": "double", "units": "m"},
+            "temperature": {
+                "long_name": "Temperature",
+                "data_type": "double",
+                "units": "degree_C",
+            },
+            "rh": {"long_name": "RH", "data_type": "double", "units": "percent"},
+            "wind_speed": {
+                "long_name": "Wind Speed",
+                "data_type": "double",
+                "units": "m s-1",
+            },
+            "wind_direction": {
+                "long_name": "Wind Direction",
+                "data_type": "double",
+                "units": "degree",
+            },
+        },
+    }
+
+    def __init__(self, sn: str, mqtt_client, data_rate: int = 1, mqtt_host: str = "localhost", mqtt_port: int = 1883, mqtt_tls_cert: str = None) -> None:
+        super().__init__(sn, mqtt_client, data_rate, mqtt_host, mqtt_port, mqtt_tls_cert)
+
+    def get_metadata(self):
+        return TestSensor1D.metadata
 
 
 def time_to_next(sec):
@@ -196,7 +244,7 @@ async def main():
     mqtt_client.connect(host=mqtt_host, port=mqtt_port)
 
 
-    mock = MockSensor(sn="1234", mqtt_client=mqtt_client)
+    mock = TestSensor1D(sn="1234", mqtt_client=mqtt_client)
 
     event_loop.add_signal_handler(signal.SIGINT, mock.shutdown)
     event_loop.add_signal_handler(signal.SIGTERM, mock.shutdown)
