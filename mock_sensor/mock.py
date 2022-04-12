@@ -22,41 +22,8 @@ class MockSensor(abc.ABC):
 
     isofmt = "%Y-%m-%dT%H:%M:%SZ"
 
-    # derived classes must define the sensor data
-    # metadata = {
-    #     "make": "MockCo",
-    #     "model": "Sensor_1",
-    #     "variables": {
-    #         "time": {"long_name": "Time"},
-    #         "latitude": {
-    #             "long_name": "Latitude",
-    #             "data_type": "double",
-    #             "units": "degrees_north",
-    #         },
-    #         "longitude": {
-    #             "long_name": "Longitude",
-    #             "data_type": "double",
-    #             "units": "degrees_east",
-    #         },
-    #         "altitude": {"long_name": "Altitude", "data_type": "double", "units": "m"},
-    #         "temperature": {
-    #             "long_name": "Temperature",
-    #             "data_type": "double",
-    #             "units": "degree_C",
-    #         },
-    #         "rh": {"long_name": "RH", "data_type": "double", "units": "percent"},
-    #         "wind_speed": {
-    #             "long_name": "Wind Speed",
-    #             "data_type": "double",
-    #             "units": "m s-1",
-    #         },
-    #         "wind_direction": {
-    #             "long_name": "Wind Direction",
-    #             "data_type": "double",
-    #             "units": "degree",
-    #         },
-    #     },
-    # }
+    # derived classes must define the sensor metadata - see TestSensor1D and TestSensor2D below
+    # metadata = {}
 
     def __init__(
         self,
@@ -125,17 +92,19 @@ class MockSensor(abc.ABC):
     async def ce_loop(self):
 
         # define type and source here
+        sensor_make = self.get_metadata()["attributes"]["make"]
+        sensor_model = self.get_metadata()["attributes"]["model"]
         attributes = {
             "type": f"gov.noaa.pmel.acg.data.insert.envds.v2",
-            "source": f"/sensor/{self.get_metadata()['make']}/{self.get_metadata()['model']}/{self.sn}",
+            "source": f"/sensor/{sensor_make}/{sensor_model}/{self.sn}",
             "datacontenttype": "application/json; charset=utf-8",
         }
 
         # get data from queue, package into cloudevent, send via mqtt
         while True:
             data = await self.data_buffer.get()
-            # payload = {"data": data, "metadata": self.get_metadata()}
-            payload = {"data": data}
+            payload = {"data": data, "metadata": self.get_metadata()}
+            # payload = {"data": data}
             ce = CloudEvent(attributes=attributes, data=payload)
             self.logger.debug("ce_loop: cloudevent = %s", ce)
             await self.send_buffer.put(ce)
@@ -164,41 +133,43 @@ class MockSensor(abc.ABC):
 class TestSensor1D(MockSensor):
 
     metadata = {
-        "make": "MockCo",
-        "model": "Sensor_1",
+        "attributes": {"make": "MockCo", "model": "Sensor_1",},
         "variables": {
-            "time": {"long_name": "Time", "dimension": ["time"]},
+            "time": {"shape": ["time"], "attributes": {"long_name": "Time"},},
             "latitude": {
-                "long_name": "Latitude",
-                "data_type": "double",
-                "units": "degrees_north",
-                "dimension": ["time"],
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Latitude", "units": "degrees_north"},
             },
             "longitude": {
-                "long_name": "Longitude",
-                "data_type": "double",
-                "units": "degrees_east",
-                "dimension": ["time"],
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Longitude", "units": "degrees_east"},
             },
-            "altitude": {"long_name": "Altitude", "data_type": "double", "units": "m"},
+            "altitude": {
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Altitude", "units": "m"},
+            },
             "temperature": {
-                "long_name": "Temperature",
-                "data_type": "double",
-                "units": "degree_C",
-                "dimension": ["time"],
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Temperature", "units": "degree_C"},
             },
-            "rh": {"long_name": "RH", "data_type": "double", "units": "percent"},
+            "rh": {
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "RH", "units": "percent"},
+            },
             "wind_speed": {
-                "long_name": "Wind Speed",
-                "data_type": "double",
-                "units": "m s-1",
-                "dimension": ["time"],
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Wind Speeed", "units": "m s-1"},
             },
             "wind_direction": {
-                "long_name": "Wind Direction",
-                "data_type": "double",
-                "units": "degree",
-                "dimension": ["time"],
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Wind Direction", "units": "degree"},
             },
         },
     }
@@ -248,41 +219,49 @@ class TestSensor1D(MockSensor):
 class TestSensor2D(MockSensor):
 
     metadata = {
-        "make": "MockCo",
-        "model": "Sensor_2",
+        "attributes": {"make": "MockCo", "model": "Sensor_2",},
         "variables": {
-            "time": {"long_name": "Time", "dimension": ["time"]},
+            "time": {"shape": ["time"], "attributes": {"long_name": "Time"},},
             "diameter": {
-                "long_name": "Diameter",
-                "data_type": "double",
-                "units": "micron",
-                "dimension": "bins",
+                "type": "double",
+                "shape": ["bins"],
+                "attributes": {
+                    "long_name": "Diameter",
+                    "units": "micron"
+                }
             },
             "latitude": {
-                "long_name": "Latitude",
-                "data_type": "double",
-                "units": "degrees_north",
-                "dimension": ["time"],
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Latitude", "units": "degrees_north"},
             },
             "longitude": {
-                "long_name": "Longitude",
-                "data_type": "double",
-                "units": "degrees_east",
-                "dimension": ["time"],
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Longitude", "units": "degrees_east"},
             },
-            "altitude": {"long_name": "Altitude", "data_type": "double", "units": "m"},
+            "altitude": {
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Altitude", "units": "m"},
+            },
             "temperature": {
-                "long_name": "Temperature",
-                "data_type": "double",
-                "units": "degree_C",
-                "dimension": ["time"],
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "Temperature", "units": "degree_C"},
             },
-            "rh": {"long_name": "RH", "data_type": "double", "units": "percent"},
+            "rh": {
+                "type": "double",
+                "shape": ["time"],
+                "attributes": {"long_name": "RH", "units": "percent"},
+            },
             "bin_counts": {
-                "long_name": "Bin Counts",
-                "data_type": "int",
-                "units": "count",
-                "dimension": ["time", "bins"],
+                "type": "int",
+                "shape": ["time", "bins"],
+                "attributes": {
+                    "long_name": "Bin Counts",
+                    "units": "count",
+                }
             },
         },
     }
@@ -339,6 +318,7 @@ def time_to_next(sec):
     delta = sec - (math.fmod(now, sec))
     return delta
 
+
 async def main_run(sensors):
 
     # start all sensors
@@ -347,13 +327,14 @@ async def main_run(sensors):
 
     await asyncio.sleep(1.0)
     while any([sensor.doRun for sensor in sensors]):
-        
+
         await asyncio.sleep(1)
 
     # wait for tasks to complete
     logging.getLogger().info("shutting down - wait for tasks to finish")
     await asyncio.sleep(2.0)
-    
+
+
 async def main():
     event_loop = asyncio.get_running_loop()
     logger = logging.getLogger()
