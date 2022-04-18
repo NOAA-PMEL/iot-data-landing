@@ -43,6 +43,6 @@ Another big question for this project is determining whether this whole system s
 
 How we implement those services depends on how vendor agnostic we attempt to be. Designing this as an AWS ecosystem, there are options for all of these services. But if we want to be as agnostic as possible, we could to look at a Kubernetes or Kafka type of system. Either of these solutions could be run on-prem or in the cloud. 
 
-A description of what I have been working on for the on-prem option is show [here](docs/sandbox_k8s_setup.md)
+A description of what I have been working on for the on-prem option is show [here](https://github.com/derekcoffman/iot-data-landing/blob/bd6ef5a2189b89c2edb74067f1668cf0c0a3b7a5/docs/sandbox_k8s_setup.md)
 
-One major question I need to get answered...what is the policy for data retention? Specifically, do we have to maintain a copy of data on-prem or does having data in cloud storage work just as well?
+One major question I need to get answered...what is the policy for data retention? Specifically, do we have to maintain a copy of data on-prem or does having data in cloud storage work just as well? Answered: if it's storage on NOAA's purchased commerical cloud it is considered NOAA IT infrastructure and does not need to be maintained on-prem. If the data are part of the Big Data Project, they do have to be maintained on-prem.
