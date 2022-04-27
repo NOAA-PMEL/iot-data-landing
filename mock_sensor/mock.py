@@ -103,8 +103,8 @@ class MockSensor(abc.ABC):
         # get data from queue, package into cloudevent, send via mqtt
         while True:
             data = await self.data_buffer.get()
-            payload = {"data": data, "metadata": self.get_metadata()}
-            # payload = {"data": data}
+            # payload = {"data": data, "metadata": self.get_metadata()}
+            payload = {"data": data}
             ce = CloudEvent(attributes=attributes, data=payload)
             self.logger.debug("ce_loop: cloudevent = %s", ce)
             await self.send_buffer.put(ce)
@@ -120,6 +120,7 @@ class MockSensor(abc.ABC):
         while True:
             event = await self.send_buffer.get()
             headers, body = to_structured(event)
+            # print(headers, body)
             ret = self.mqtt_client.publish(
                 "instrument/data", payload=body, qos=0, properties=properties
             )
@@ -133,7 +134,7 @@ class MockSensor(abc.ABC):
 class TestSensor1D(MockSensor):
 
     metadata = {
-        "attributes": {"make": "MockCo", "model": "Sensor_1",},
+        "attributes": {"make": "MockCo", "model": "Sensor-1",},
         "variables": {
             "time": {"shape": ["time"], "attributes": {"long_name": "Time"},},
             "latitude": {
@@ -210,7 +211,7 @@ class TestSensor1D(MockSensor):
             data["temperature"] = round(25 + random.uniform(-3, 3), 3)
             data["rh"] = round(60 + random.uniform(-5, 5), 3)
             data["wind_speed"] = round(10 + random.uniform(-5, 5), 3)
-            data["wind_dir"] = round(90 + random.uniform(-20, 20), 3)
+            data["wind_direction"] = round(90 + random.uniform(-20, 20), 3)
 
             await self.data_buffer.put(data)
             await asyncio.sleep(time_to_next(self.data_rate))
@@ -219,7 +220,7 @@ class TestSensor1D(MockSensor):
 class TestSensor2D(MockSensor):
 
     metadata = {
-        "attributes": {"make": "MockCo", "model": "Sensor_2",},
+        "attributes": {"make": "MockCo", "model": "Sensor-2",},
         "variables": {
             "time": {"shape": ["time"], "attributes": {"long_name": "Time"},},
             "diameter": {
@@ -230,21 +231,21 @@ class TestSensor2D(MockSensor):
                     "units": "micron"
                 }
             },
-            "latitude": {
-                "type": "double",
-                "shape": ["time"],
-                "attributes": {"long_name": "Latitude", "units": "degrees_north"},
-            },
-            "longitude": {
-                "type": "double",
-                "shape": ["time"],
-                "attributes": {"long_name": "Longitude", "units": "degrees_east"},
-            },
-            "altitude": {
-                "type": "double",
-                "shape": ["time"],
-                "attributes": {"long_name": "Altitude", "units": "m"},
-            },
+            # "latitude": {
+            #     "type": "double",
+            #     "shape": ["time"],
+            #     "attributes": {"long_name": "Latitude", "units": "degrees_north"},
+            # },
+            # "longitude": {
+            #     "type": "double",
+            #     "shape": ["time"],
+            #     "attributes": {"long_name": "Longitude", "units": "degrees_east"},
+            # },
+            # "altitude": {
+            #     "type": "double",
+            #     "shape": ["time"],
+            #     "attributes": {"long_name": "Altitude", "units": "m"},
+            # },
             "temperature": {
                 "type": "double",
                 "shape": ["time"],
@@ -296,9 +297,9 @@ class TestSensor2D(MockSensor):
             # print(f"dt(hour:min): {dt.hour}:{dt.minute}")
             data["time"] = dt_str
             data["diameter"] = [0.1, 0.2, 0.35, 0.5, 0.75, 1.0]
-            data["latitude"] = round(10 + random.uniform(-1, 1) / 10, 3)
-            data["longitude"] = round(-150 + random.uniform(-1, 1) / 10, 3)
-            data["altitude"] = round(100 + random.uniform(-10, 10), 3)
+            # data["latitude"] = round(10 + random.uniform(-1, 1) / 10, 3)
+            # data["longitude"] = round(-150 + random.uniform(-1, 1) / 10, 3)
+            # data["altitude"] = round(100 + random.uniform(-10, 10), 3)
 
             data["temperature"] = round(25 + random.uniform(-3, 3), 3)
             data["rh"] = round(60 + random.uniform(-5, 5), 3)
@@ -310,6 +311,7 @@ class TestSensor2D(MockSensor):
             data["bin_counts"] = count
 
             await self.data_buffer.put(data)
+            print(f"2d data_rate: {self.data_rate}")
             await asyncio.sleep(time_to_next(self.data_rate))
 
 
@@ -339,7 +341,9 @@ async def main():
     event_loop = asyncio.get_running_loop()
     logger = logging.getLogger()
 
-    mqtt_host = "localhost"
+    # mqtt_host = "localhost"
+    mqtt_host = "roosevelt"
+    # mqtt_host = "wallingford"
     mqtt_port = 1883
     # create mqtt client
     mqtt_client = mqtt.Client("dataserver", protocol=mqtt.MQTTv5)
@@ -357,11 +361,28 @@ async def main():
     mqtt_client.connect(host=mqtt_host, port=mqtt_port)
 
     sensors = []
-    mock1 = TestSensor1D(sn="1234", mqtt_client=mqtt_client)
-    sensors.append(mock1)
+    # mock1_1 = TestSensor1D(sn="1234", mqtt_client=mqtt_client)
+    # sensors.append(mock1_1)
 
-    mock2 = TestSensor2D(sn="3234", mqtt_client=mqtt_client, data_rate=5)
-    sensors.append(mock2)
+    # mock1_2 = TestSensor1D(sn="2345", mqtt_client=mqtt_client)
+    # sensors.append(mock1_2)
+
+    # mock1_3 = TestSensor1D(sn="3456", mqtt_client=mqtt_client)
+    # sensors.append(mock1_3)
+
+    sensors.append(TestSensor1D(sn="1234", mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="2345", mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="3456", mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="4567", mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="5678", mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="6789", mqtt_client=mqtt_client))
+
+    # mock2_1 = TestSensor2D(sn="3234", mqtt_client=mqtt_client, data_rate=5)
+    # sensors.append(mock2_1)
+
+    sensors.append(TestSensor2D(sn="3234", mqtt_client=mqtt_client, data_rate=5))
+    sensors.append(TestSensor2D(sn="3345", mqtt_client=mqtt_client, data_rate=10))
+    sensors.append(TestSensor2D(sn="3456", mqtt_client=mqtt_client, data_rate=30))
 
     def shutdown_handler(*args):
         for sensor in sensors:
