@@ -1,14 +1,15 @@
 import abc
 from datetime import datetime
 import math
-import os
+# import os
 import signal
 import sys
 import asyncio
-import json
+# import json
 import random
 
-from cloudevents.http import CloudEvent, event, from_json, to_structured
+# from cloudevents.http import CloudEvent, event, from_json, to_structured
+from cloudevents.http import CloudEvent, to_structured
 from cloudevents.exceptions import InvalidStructuredJSON, MissingRequiredFields
 import paho.mqtt.client as mqtt
 from paho.mqtt.packettypes import PacketTypes
