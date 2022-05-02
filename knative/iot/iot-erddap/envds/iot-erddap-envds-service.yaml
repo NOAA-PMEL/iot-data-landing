@@ -1,0 +1,19 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: iot-erddap-envds
+  namespace: iot
+spec:
+  template:
+    spec:
+      containers:
+      - image: wallingford.pmel.noaa.gov:8443/iot/iot-erddap-envds:0.3
+        # env:
+        # - name: PORT
+        #   value: "8080"
+
+    # metadata:
+    #   annotations:
+        # autoscaling.knative.dev/max-scale: "5"
+        # autoscaling.knative.dev/target: "5"
+        # autoscaling.knative.dev/metric: "rps"
