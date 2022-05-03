@@ -42,6 +42,43 @@ Development requires existing installations of Python and Docker.
     python mock_sensor/mock.py
     ```
 
+## New Collaborators
+
+New collaborators will need to associate a GPG key with their GitHub account using the following resources:
+
+* [Creating a GPG key](https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key)
+* [Associating email with the key](https://docs.github.com/en/authentication/managing-commit-signature-verification/associating-an-email-with-your-gpg-key)
+
+After that an existing collaborator will need to do the following:
+
+1. Import the new collaborators public key
+
+    ```bash
+    curl https://github.com/[github_user].gpg | gpg --import
+    ```
+
+1. Fully trust the key
+
+    ```bash
+    $ gpg --list-keys
+    $ gpg --edit-key "[the key id]"
+    ...
+    gpg> trust
+    ...
+    Your decision? 5
+    Do you really want to set this key to ultimate trust? (y/N) y
+    ...
+    gpg> quit
+    ```
+
+1. Add the collaborators key to this repository
+
+    ```bash
+    git-crypt add-gpg-user "[email associated with the key]"
+    ```
+
+1. Submit PR with new user. The above command creates a new commit.
+
 
 ## Things
 
