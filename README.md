@@ -12,6 +12,12 @@ Development requires existing installations of Python and Docker.
     $ git clone git@github.com:derekcoffman/iot-data-landing.git
     ```
 
+1. Decrypt the repository with `git crypt`. This requires [`git-crypt`](https://github.com/AGWA/git-crypt) be [installed](https://github.com/AGWA/git-crypt/blob/master/INSTALL.md) and that your gpg key be added to the repository by someone that already has unencrypted access.
+
+    ```bash
+    $ git-crypt unlock
+    ```
+
 1. Install required Python dependencies
 
     ```
