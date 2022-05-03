@@ -41,3 +41,14 @@ Development requires existing installations of Python and Docker.
     ```
     python mock_sensor/mock.py
     ```
+
+
+## Things
+
+Each thing, whether real or mocked, needs a certificate and private key to publish data to MQTT. To generate a new thing along with a certificate and key, run the `scripts/create_thing.sh` script and pass it the name of the thing you would like to generate.
+
+```
+./scripts/create_thing.sh my-first-new-thing
+```
+
+That will create or update the certificates and keys in the `things/my-first-new-thing` folder and send the first message to the AWS IoT Core MQTT endpoint to register and provision the new "thing".
