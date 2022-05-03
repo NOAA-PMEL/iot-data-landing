@@ -1,0 +1,11 @@
+CAs/**/*.key filter=git-crypt diff=git-crypt
+CAs/**/*.pem filter=git-crypt diff=git-crypt
+CAs/**/*.csr filter=git-crypt diff=git-crypt
+CAs/**/*.crt filter=git-crypt diff=git-crypt
+CAs/**/*.srl filter=git-crypt diff=git-crypt
+
+things/**/*.key filter=git-crypt diff=git-crypt
+things/**/*.pem filter=git-crypt diff=git-crypt
+things/**/*.csr filter=git-crypt diff=git-crypt
+things/**/*.crt filter=git-crypt diff=git-crypt
+things/**/*.srl filter=git-crypt diff=git-crypt
