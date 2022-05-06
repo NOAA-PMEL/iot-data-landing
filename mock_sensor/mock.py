@@ -14,9 +14,60 @@ from cloudevents.exceptions import InvalidStructuredJSON, MissingRequiredFields
 import paho.mqtt.client as mqtt
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-
+from mock_sensor.client import MQTTClient
 import logging
 import time
+
+
+class DataSource(abc.ABC):
+    def __init__(self, mqtt_client) -> None:
+        super().__init__()
+
+        self.logger = logging.getLogger()
+        self.logger.info()
+
+        self.mqtt_client = mqtt_client
+        self.sensor_list = []
+        self.send_buffer = asyncio.Queue()
+
+        asyncio.get_running_loop().create_task(self.send_loop())
+
+
+    def add_sensors(self, sensor_list):
+        if sensor_list:
+            for sensor in sensor_list:
+                self.add_sensor(sensor)
+
+    def add_sensor(self, sensor):
+        if sensor:
+            self.sensor_list.append(sensor)
+
+    async def send_loop(self):
+
+        properties = Properties(PacketTypes.PUBLISH)
+        properties.ContentType = "application/cloudevents+json; charset=utf-8"
+
+        while True:
+            event = await self.send_buffer.get()
+            headers, body = to_structured(event)
+            # print(headers, body)
+            ret = self.mqtt_client.publish(
+                "instrument/data", payload=body, qos=0, properties=properties
+            )
+            await asyncio.sleep(0.1)
+
+
+class ACGDAQ(DataSource):
+
+    metadata = {
+        "attributes": {
+            "name": "acg-daq"
+        },
+    }
+
+    def __init__(self, mqtt_client) -> None:
+        super().__init__(mqtt_client)
+
 
 
 class MockSensor(abc.ABC):
@@ -51,12 +102,16 @@ class MockSensor(abc.ABC):
         # define data queues
         self.data_buffer = asyncio.Queue()
         self.payload_buffer = asyncio.Queue()
-        self.send_buffer = asyncio.Queue()
+        # self.send_buffer = asyncio.Queue()
+        self.send_buffer = None
 
         # run flag
         self.doRun = False
 
         self.task_list = []
+
+    def set_send_buffer(self, buffer):
+        self.send_buffer = buffer
 
     @abc.abstractmethod
     def get_metadata(self):
@@ -342,8 +397,8 @@ async def main():
     event_loop = asyncio.get_running_loop()
     logger = logging.getLogger()
 
-    # mqtt_host = "localhost"
-    mqtt_host = "roosevelt"
+    mqtt_host = "localhost"
+    # mqtt_host = "roosevelt"
     # mqtt_host = "wallingford"
     mqtt_port = 1883
     # create mqtt client
