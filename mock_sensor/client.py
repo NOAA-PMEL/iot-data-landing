@@ -191,6 +191,7 @@ class MQTTClient():
             try:
                 topic = message["topic"]
                 if topic:
+                    self.logger.debug("topic: %s, payload: %s", topic, message["payload"] )
                     self.client.publish(
                         topic,
                         payload=message["payload"],
