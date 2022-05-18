@@ -24,17 +24,7 @@ Development requires existing installations of Python and Docker.
     $ pip install -r requirements.txt
     ```
 
-1. Change permissions on the local TLS cert files to the uid/gid that runs mosquitto inside of the Docker container
-
-    ```
-    sudo chown 1883:1883 docker/certs/*
-    ```
-
-1. Start a local Mosquitto MQTT broker on port 1833 and 8883 (TLS)
-
-    ```
-    docker-compose up -d
-    ```
+1. Follow the instructions in the [Development README](dev/README.md) to start the entire stack locally in a Kubernetes cluster.
 
 1. Start the mock sever:
 
@@ -51,7 +41,7 @@ New collaborators will need to associate a GPG key with their GitHub account usi
 
 After that an existing collaborator will need to do the following:
 
-1. Import the new collaborators public key
+1. Import the new collaborator's public key
 
     ```bash
     curl https://github.com/[github_user].gpg | gpg --import
@@ -82,7 +72,7 @@ After that an existing collaborator will need to do the following:
 
 ## Things
 
-Each thing, whether real or mocked, needs a certificate and private key to publish data to MQTT. To generate a new thing along with a certificate and key, run the `scripts/create_thing.sh` script and pass it the name of the thing you would like to generate.
+Each thing, whether real or mocked, needs a certificate and private key to publish data to the AWS MQTT Server. To generate a new thing along with a certificate and key, run the `scripts/create_thing.sh` script and pass it the name of the thing you would like to generate.
 
 ```
 ./scripts/create_thing.sh my-first-new-thing
