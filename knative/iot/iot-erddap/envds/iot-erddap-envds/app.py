@@ -8,11 +8,11 @@ import os
 
 app = Flask(__name__)
 
-# def send_to_erddap(request):
-#     ce = from_http(request.headers, request.get_data())
-#     print(f"ce data: {ce}")
-#     # process data and send to erddap
-#     return ce['type'], ce['source']
+def send_to_erddap(request):
+    ce = from_http(request.headers, request.get_data())
+    print(f"ce data: {ce}")
+    # process data and send to erddap
+    return ce['type'], ce['source']
 
 
 
@@ -58,6 +58,8 @@ def handle_insert():
     params.append(f"serial_number={sn}")
 
     data = ce.data["data"]
+    print(f"insert new data: {data}")
+
     # print(data)
     # need to check shape here?
     for var in variables:
@@ -82,6 +84,8 @@ def handle_insert():
 
     postURL = "?".join([url,urlparams])
     print(f"postURL: {postURL}")
+    postURL_encode = requests
+    # postURL = "https://wallingford.pmel.noaa.gov:8444/erddap/tabledap/MockCo_Sensor-1_1234.insert?make=MockCo&model=Sensor-1&serial_number=1234&time=2022-04-20T00:26:02Z&latitude=9.931&longitude=-150.039&altitude=106.362&temperature=22.068&rh=55.722&wind_speed=10.116&wind_direction=81.328&author=envds_secretkey"
     resp = requests.post(postURL, verify=False)
     print(f"resp: {resp}")
     return f"{resp}"

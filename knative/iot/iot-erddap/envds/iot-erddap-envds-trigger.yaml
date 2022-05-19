@@ -3,10 +3,10 @@ apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: iot-erddap-envds
-  # namespace: iot
+  namespace: iot
 spec:
-  broker: default
-  # broker: iot-broker
+  # broker: default
+  broker: iot-default
   filter:
     attributes:
       type: gov.noaa.pmel.acg.data.insert.envds.v2
