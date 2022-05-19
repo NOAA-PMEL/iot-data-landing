@@ -59,7 +59,8 @@ class DataSource(abc.ABC):
 
         # properties = Properties(PacketTypes.PUBLISH)
         # properties.ContentType = "application/cloudevents+json; charset=utf-8"
-        topic = "/".join(["aws-id", self.get_source_id(), "data"])
+        # topic = "/".join(["aws-id", self.get_source_id(), "data"])
+        topic = "/".join(["aws-id", self.metadata["attributes"]["source-type"], "data"])
         content_type = self.metadata["attributes"]["content-type"]
         # self.logger.debug("topic: %s", self.get_source_id())
 
@@ -488,7 +489,8 @@ async def main():
     event_loop = asyncio.get_running_loop()
     logger = logging.getLogger()
 
-    mqtt_config = {"host": "localhost", "port": 1883}
+    # mqtt_config = {"host": "localhost", "port": 1883}
+    mqtt_config = {"host": "roosevelt", "port": 1883}
     mqtt_client = MQTTClient(config=mqtt_config)
 
     # mqtt_host = "localhost"
