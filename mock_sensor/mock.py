@@ -1,10 +1,12 @@
 import abc
 from datetime import datetime
 import math
+
 # import os
 import signal
 import sys
 import asyncio
+
 # import json
 import random
 
@@ -14,20 +16,30 @@ from cloudevents.exceptions import InvalidStructuredJSON, MissingRequiredFields
 import paho.mqtt.client as mqtt
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-from mock_sensor.client import MQTTClient
+
+try:
+    from client import MQTTClient
+except ModuleNotFoundError:
+    pass
+# from mock_sensor.client import MQTTClient
+
 import logging
 import time
 
 
 class DataSource(abc.ABC):
-    def __init__(self, mqtt_client) -> None:
+
+    def __init__(self, name, mqtt_client) -> None:
         super().__init__()
 
-        self.logger = logging.getLogger()
-        self.logger.info()
+        self.name = name
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info("starting data source")
 
         self.mqtt_client = mqtt_client
         self.sensor_list = []
+
+        self.data_buffer = asyncio.Queue()
         self.send_buffer = asyncio.Queue()
 
         asyncio.get_running_loop().create_task(self.send_loop())
@@ -40,32 +52,112 @@ class DataSource(abc.ABC):
 
     def add_sensor(self, sensor):
         if sensor:
+            sensor.set_data_buffer(self.data_buffer)
             self.sensor_list.append(sensor)
+
+    def get_source_id(self):
+        return "-".join([self.metadata["attributes"]["source-type"], self.name])
 
     async def send_loop(self):
 
-        properties = Properties(PacketTypes.PUBLISH)
-        properties.ContentType = "application/cloudevents+json; charset=utf-8"
+        # properties = Properties(PacketTypes.PUBLISH)
+        # properties.ContentType = "application/cloudevents+json; charset=utf-8"
+        # topic = "/".join(["aws-id", self.get_source_id(), "data"])
+        topic = "/".join(["aws-id", self.metadata["attributes"]["source-type"], "data"])
+        content_type = self.metadata["attributes"]["content-type"]
+        # self.logger.debug("topic: %s", self.get_source_id())
 
         while True:
             event = await self.send_buffer.get()
             headers, body = to_structured(event)
             # print(headers, body)
-            ret = self.mqtt_client.publish(
-                "instrument/data", payload=body, qos=0, properties=properties
+            await self.mqtt_client.publish(
+                topic, payload=body, qos=0, content_type=content_type
             )
             await asyncio.sleep(0.1)
 
+    def start(self):
+        asyncio.get_running_loop().create_task(self.run())
+        for sensor in self.sensor_list:
+            sensor.start()
+
+    async def run(self):
+        self.doRun = True
+
+        self.logger.info("start run")
+
+        # start loops
+        # self.task_list.append(asyncio.get_running_loop().create_task(self.data_loop()))
+        asyncio.get_running_loop().create_task(self.ce_loop())
+        # asyncio.get_running_loop().create_task(self.send_loop())
+
+        while self.doRun:
+            pass
+            await asyncio.sleep(1)
+
+        # this only shuts down the data_loop to allow last message(s) to go through
+        # for task in self.task_list:
+        #     task.cancel()
+        print("shutdown")
+
+        for sensor in self.sensor_list:
+            sensor.shutdown()
+
+    def shutdown(self):
+        self.logger.info("Shutting down...")
+
+        for sensor in self.sensor_list:
+            sensor.shutdown()
+
+        self.doRun = False
+
 
 class ACGDAQ(DataSource):
+    def __init__(self, name, mqtt_client) -> None:
+        super().__init__(name, mqtt_client)
 
-    metadata = {
-        "attributes": {"name": "acg-daq"},
-    }
+        self.metadata = {
+            "attributes": {
+                "source-type": "acg-daq",
+                "content-type": "application/cloudevents+json; charset=utf-8",
+            },
+        }
 
-    def __init__(self, mqtt_client) -> None:
-        super().__init__(mqtt_client)
+    async def ce_loop(self):
 
+        # define type and source here
+        # sensor_make = self.get_metadata()["attributes"]["make"]
+        # sensor_model = self.get_metadata()["attributes"]["model"]
+        # attributes = {
+        #     "type": f"gov.noaa.pmel.acg.data.insert.envds.v2",
+        #     "source": f"/sensor/{sensor_make}/{sensor_model}/{self.sn}",
+        #     "datacontenttype": "application/json; charset=utf-8",
+        # }
+
+        # get data from queue, package into cloudevent, send via mqtt
+        while True:
+            data = await self.data_buffer.get()
+            try:
+                sensor_atts = data["attributes"]
+                sensor_make = sensor_atts["make"]
+                sensor_model = sensor_atts["model"]
+                sn = data["instance"]["sn"]
+                attributes = {
+                    "type": f"gov.noaa.pmel.acg.data.insert.envds.v2",
+                    "source": f"/sensor/{sensor_make}/{sensor_model}/{sn}",
+                    "datacontenttype": "application/json; charset=utf-8",
+                }
+
+                payload = {"data": data["variables"]}
+                ce = CloudEvent(attributes=attributes, data=payload)
+                self.logger.debug("ce_loop: cloudevent = %s", ce)
+                await self.send_buffer.put(ce)
+
+            except KeyError:
+                pass
+            # payload = {"data": data, "metadata": self.get_metadata()}
+
+            await asyncio.sleep(0.1)
 
 
 class MockSensor(abc.ABC):
@@ -78,11 +170,8 @@ class MockSensor(abc.ABC):
     def __init__(
         self,
         sn: str,
-        mqtt_client,
+        # mqtt_client,
         data_rate: int = 1,
-        mqtt_host: str = "localhost",
-        mqtt_port: int = 1883,
-        mqtt_tls_cert: str = None,
     ) -> None:
 
         # attach logger
@@ -91,25 +180,27 @@ class MockSensor(abc.ABC):
 
         # handle arguments
         self.sn = sn
-        self.mqtt_client = mqtt_client
+        # self.mqtt_client = mqtt_client
         self.data_rate = data_rate
         # self.mqtt_host = mqtt_host
         # self.mqtt_port = mqtt_port
         # self.mqtt_tls_cert = mqtt_tls_cert
 
         # define data queues
-        self.data_buffer = asyncio.Queue()
-        self.payload_buffer = asyncio.Queue()
+        self.data_buffer = None
+        # self.data_buffer = asyncio.Queue()
+        # self.payload_buffer = asyncio.Queue()
         # self.send_buffer = asyncio.Queue()
-        self.send_buffer = None
+        # self.send_buffer = None
 
         # run flag
         self.doRun = False
 
         self.task_list = []
 
-    def set_send_buffer(self, buffer):
-        self.send_buffer = buffer
+    def set_data_buffer(self, buffer):
+        self.data_buffer = buffer
+
 
     @abc.abstractmethod
     def get_metadata(self):
@@ -125,8 +216,8 @@ class MockSensor(abc.ABC):
 
         # start loops
         self.task_list.append(asyncio.get_running_loop().create_task(self.data_loop()))
-        asyncio.get_running_loop().create_task(self.ce_loop())
-        asyncio.get_running_loop().create_task(self.send_loop())
+        # asyncio.get_running_loop().create_task(self.ce_loop())
+        # asyncio.get_running_loop().create_task(self.send_loop())
 
         while self.doRun:
             pass
@@ -143,42 +234,42 @@ class MockSensor(abc.ABC):
         pass
 
     # package data into cloudevent
-    async def ce_loop(self):
+    # async def ce_loop(self):
 
-        # define type and source here
-        sensor_make = self.get_metadata()["attributes"]["make"]
-        sensor_model = self.get_metadata()["attributes"]["model"]
-        attributes = {
-            "type": f"gov.noaa.pmel.acg.data.insert.envds.v2",
-            "source": f"/sensor/{sensor_make}/{sensor_model}/{self.sn}",
-            "datacontenttype": "application/json; charset=utf-8",
-        }
+    #     # define type and source here
+    #     sensor_make = self.get_metadata()["attributes"]["make"]
+    #     sensor_model = self.get_metadata()["attributes"]["model"]
+    #     attributes = {
+    #         "type": f"gov.noaa.pmel.acg.data.insert.envds.v2",
+    #         "source": f"/sensor/{sensor_make}/{sensor_model}/{self.sn}",
+    #         "datacontenttype": "application/json; charset=utf-8",
+    #     }
 
-        # get data from queue, package into cloudevent, send via mqtt
-        while True:
-            data = await self.data_buffer.get()
-            # payload = {"data": data, "metadata": self.get_metadata()}
-            payload = {"data": data}
-            ce = CloudEvent(attributes=attributes, data=payload)
-            self.logger.debug("ce_loop: cloudevent = %s", ce)
-            await self.send_buffer.put(ce)
+    #     # get data from queue, package into cloudevent, send via mqtt
+    #     while True:
+    #         data = await self.data_buffer.get()
+    #         # payload = {"data": data, "metadata": self.get_metadata()}
+    #         payload = {"data": data}
+    #         ce = CloudEvent(attributes=attributes, data=payload)
+    #         self.logger.debug("ce_loop: cloudevent = %s", ce)
+    #         await self.send_buffer.put(ce)
 
-            await asyncio.sleep(0.1)
+    #         await asyncio.sleep(0.1)
 
     # outpu to mqtt broker using paho client
-    async def send_loop(self):
+    # async def send_loop(self):
 
-        properties = Properties(PacketTypes.PUBLISH)
-        properties.ContentType = "application/cloudevents+json; charset=utf-8"
+    #     properties = Properties(PacketTypes.PUBLISH)
+    #     properties.ContentType = "application/cloudevents+json; charset=utf-8"
 
-        while True:
-            event = await self.send_buffer.get()
-            headers, body = to_structured(event)
-            # print(headers, body)
-            ret = self.mqtt_client.publish(
-                "instrument/data", payload=body, qos=0, properties=properties
-            )
-            await asyncio.sleep(0.1)
+    #     while True:
+    #         event = await self.send_buffer.get()
+    #         headers, body = to_structured(event)
+    #         # print(headers, body)
+    #         ret = self.mqtt_client.publish(
+    #             "instrument/data", payload=body, qos=0, properties=properties
+    #         )
+    #         await asyncio.sleep(0.1)
 
     def shutdown(self):
         self.logger.info("Shutting down...")
@@ -232,14 +323,16 @@ class TestSensor1D(MockSensor):
     def __init__(
         self,
         sn: str,
-        mqtt_client,
+        # mqtt_client,
         data_rate: int = 1,
         mqtt_host: str = "localhost",
         mqtt_port: int = 1883,
         mqtt_tls_cert: str = None,
     ) -> None:
         super().__init__(
-            sn, mqtt_client, data_rate, mqtt_host, mqtt_port, mqtt_tls_cert
+            # sn, mqtt_client, data_rate, mqtt_host, mqtt_port, mqtt_tls_cert
+            sn,
+            data_rate,
         )
 
     def get_metadata(self):
@@ -252,22 +345,28 @@ class TestSensor1D(MockSensor):
         self.logger.debug("Starting data_loop")
         await asyncio.sleep(time_to_next(self.data_rate))
         while True:
-            data = dict()
+            variables = dict()
 
             dt = datetime.utcnow()
             dt_str = datetime.strftime(dt, MockSensor.isofmt)
             # print(f"dt(hour:min): {dt.hour}:{dt.minute}")
-            data["time"] = dt_str
-            data["latitude"] = round(10 + random.uniform(-1, 1) / 10, 3)
-            data["longitude"] = round(-150 + random.uniform(-1, 1) / 10, 3)
-            data["altitude"] = round(100 + random.uniform(-10, 10), 3)
+            variables["time"] = dt_str
+            variables["latitude"] = round(10 + random.uniform(-1, 1) / 10, 3)
+            variables["longitude"] = round(-150 + random.uniform(-1, 1) / 10, 3)
+            variables["altitude"] = round(100 + random.uniform(-10, 10), 3)
 
-            data["temperature"] = round(25 + random.uniform(-3, 3), 3)
-            data["rh"] = round(60 + random.uniform(-5, 5), 3)
-            data["wind_speed"] = round(10 + random.uniform(-5, 5), 3)
-            data["wind_direction"] = round(90 + random.uniform(-20, 20), 3)
+            variables["temperature"] = round(25 + random.uniform(-3, 3), 3)
+            variables["rh"] = round(60 + random.uniform(-5, 5), 3)
+            variables["wind_speed"] = round(10 + random.uniform(-5, 5), 3)
+            variables["wind_direction"] = round(90 + random.uniform(-20, 20), 3)
 
-            await self.data_buffer.put(data)
+            data = {
+                "attributes": TestSensor1D.metadata["attributes"],
+                "instance": {"sn": self.sn},
+                "variables": variables,
+            }
+            if self.data_buffer:
+                await self.data_buffer.put(data)
             await asyncio.sleep(time_to_next(self.data_rate))
 
 
@@ -280,10 +379,7 @@ class TestSensor2D(MockSensor):
             "diameter": {
                 "type": "double",
                 "shape": ["bins"],
-                "attributes": {
-                    "long_name": "Diameter",
-                    "units": "micron"
-                }
+                "attributes": {"long_name": "Diameter", "units": "micron"},
             },
             # "latitude": {
             #     "type": "double",
@@ -313,10 +409,7 @@ class TestSensor2D(MockSensor):
             "bin_counts": {
                 "type": "int",
                 "shape": ["time", "bins"],
-                "attributes": {
-                    "long_name": "Bin Counts",
-                    "units": "count",
-                }
+                "attributes": {"long_name": "Bin Counts", "units": "count",},
             },
         },
     }
@@ -324,14 +417,13 @@ class TestSensor2D(MockSensor):
     def __init__(
         self,
         sn: str,
-        mqtt_client,
+        # mqtt_client,
         data_rate: int = 1,
-        mqtt_host: str = "localhost",
-        mqtt_port: int = 1883,
-        mqtt_tls_cert: str = None,
     ) -> None:
         super().__init__(
-            sn, mqtt_client, data_rate, mqtt_host, mqtt_port, mqtt_tls_cert
+            # sn, mqtt_client, data_rate, mqtt_host, mqtt_port, mqtt_tls_cert
+            sn,
+            data_rate,
         )
 
     def get_metadata(self):
@@ -344,27 +436,33 @@ class TestSensor2D(MockSensor):
         self.logger.debug("Starting data_loop")
         await asyncio.sleep(time_to_next(self.data_rate))
         while True:
-            data = dict()
+            variables = dict()
 
             dt = datetime.utcnow()
             dt_str = datetime.strftime(dt, MockSensor.isofmt)
             # print(f"dt(hour:min): {dt.hour}:{dt.minute}")
-            data["time"] = dt_str
-            data["diameter"] = [0.1, 0.2, 0.35, 0.5, 0.75, 1.0]
+            variables["time"] = dt_str
+            variables["diameter"] = [0.1, 0.2, 0.35, 0.5, 0.75, 1.0]
             # data["latitude"] = round(10 + random.uniform(-1, 1) / 10, 3)
             # data["longitude"] = round(-150 + random.uniform(-1, 1) / 10, 3)
             # data["altitude"] = round(100 + random.uniform(-10, 10), 3)
 
-            data["temperature"] = round(25 + random.uniform(-3, 3), 3)
-            data["rh"] = round(60 + random.uniform(-5, 5), 3)
+            variables["temperature"] = round(25 + random.uniform(-3, 3), 3)
+            variables["rh"] = round(60 + random.uniform(-5, 5), 3)
 
             base_count = [10, 15, 25, 20, 12, 5]
             count = []
             for bc in base_count:
                 count.append(int(bc + random.uniform(-2, 2)))
-            data["bin_counts"] = count
+            variables["bin_counts"] = count
 
-            await self.data_buffer.put(data)
+            data = {
+                "attributes": TestSensor2D.metadata["attributes"],
+                "instance": {"sn": self.sn},
+                 "variables": variables,
+            }
+            if self.data_buffer:
+                await self.data_buffer.put(data)
             print(f"2d data_rate: {self.data_rate}")
             await asyncio.sleep(time_to_next(self.data_rate))
 
@@ -375,14 +473,14 @@ def time_to_next(sec):
     return delta
 
 
-async def main_run(sensors):
+async def main_run(daqs):
 
     # start all sensors
-    for sensor in sensors:
-        sensor.start()
+    for daq in daqs:
+        daq.start()
 
     await asyncio.sleep(1.0)
-    while any([sensor.doRun for sensor in sensors]):
+    while any([daq.doRun for daq in daqs]):
 
         await asyncio.sleep(1)
 
@@ -395,58 +493,60 @@ async def main():
     event_loop = asyncio.get_running_loop()
     logger = logging.getLogger()
 
-    mqtt_host = "localhost"
-    # mqtt_host = "roosevelt"
-    # mqtt_host = "wallingford"
-    mqtt_port = 1883
-    # create mqtt client
-    mqtt_client = mqtt.Client("dataserver", protocol=mqtt.MQTTv5)
-    # mqtt_client.tls_set(ca_certs='./mqtt/certs/ca.crt', cert_reqs=ssl.CERT_NONE)
-    # mqtt_client.tls_insecure_set(True)
-    mqtt_client.on_message = on_message
-    mqtt_client.on_publish = on_publish
+    # mqtt_config = {"host": "localhost", "port": 1883}
+    mqtt_config = {"host": "roosevelt", "port": 1883}
+    mqtt_client = MQTTClient(config=mqtt_config)
 
-    properties = Properties(PacketTypes.PUBLISH)
-    properties.ContentType = "application/cloudevents+json; charset=utf-8"
+    # mqtt_host = "localhost"
+    # # mqtt_host = "roosevelt"
+    # # mqtt_host = "wallingford"
+    # mqtt_port = 1883
+    # # create mqtt client
+    # mqtt_client = mqtt.Client("dataserver", protocol=mqtt.MQTTv5)
+    # # mqtt_client.tls_set(ca_certs='./mqtt/certs/ca.crt', cert_reqs=ssl.CERT_NONE)
+    # # mqtt_client.tls_insecure_set(True)
+    # mqtt_client.on_message = on_message
+    # mqtt_client.on_publish = on_publish
 
-    # context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    # mqtt_client.tls_set_context(context)
+    # properties = Properties(PacketTypes.PUBLISH)
+    # properties.ContentType = "application/cloudevents+json; charset=utf-8"
 
-    mqtt_client.connect(host=mqtt_host, port=mqtt_port)
+    # # context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    # # mqtt_client.tls_set_context(context)
 
+    # mqtt_client.connect(host=mqtt_host, port=mqtt_port)
+
+    daqs = []
     sensors = []
-    # mock1_1 = TestSensor1D(sn="1234", mqtt_client=mqtt_client)
-    # sensors.append(mock1_1)
+    
+    acgdaq = ACGDAQ(name="mock1", mqtt_client=mqtt_client)
+    # 1D
+    sensors.append(TestSensor1D(sn="1234"))#, mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="2345"))#, mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="3456"))#, mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="4567"))#, mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="5678"))#, mqtt_client=mqtt_client))
+    sensors.append(TestSensor1D(sn="6789"))#, mqtt_client=mqtt_client))
+    #2D
+    sensors.append(TestSensor2D(sn="3234", data_rate=5))#, mqtt_client=mqtt_client, data_rate=5))
+    sensors.append(TestSensor2D(sn="3345", data_rate=10))#, mqtt_client=mqtt_client, data_rate=10))
+    sensors.append(TestSensor2D(sn="3456", data_rate=30))#, mqtt_client=mqtt_client, data_rate=30))
 
-    # mock1_2 = TestSensor1D(sn="2345", mqtt_client=mqtt_client)
-    # sensors.append(mock1_2)
+    acgdaq.add_sensors(sensors)
+    daqs.append(acgdaq)
 
-    # mock1_3 = TestSensor1D(sn="3456", mqtt_client=mqtt_client)
-    # sensors.append(mock1_3)
-
-    sensors.append(TestSensor1D(sn="1234", mqtt_client=mqtt_client))
-    sensors.append(TestSensor1D(sn="2345", mqtt_client=mqtt_client))
-    sensors.append(TestSensor1D(sn="3456", mqtt_client=mqtt_client))
-    sensors.append(TestSensor1D(sn="4567", mqtt_client=mqtt_client))
-    sensors.append(TestSensor1D(sn="5678", mqtt_client=mqtt_client))
-    sensors.append(TestSensor1D(sn="6789", mqtt_client=mqtt_client))
-
-    # mock2_1 = TestSensor2D(sn="3234", mqtt_client=mqtt_client, data_rate=5)
-    # sensors.append(mock2_1)
-
-    sensors.append(TestSensor2D(sn="3234", mqtt_client=mqtt_client, data_rate=5))
-    sensors.append(TestSensor2D(sn="3345", mqtt_client=mqtt_client, data_rate=10))
-    sensors.append(TestSensor2D(sn="3456", mqtt_client=mqtt_client, data_rate=30))
 
     def shutdown_handler(*args):
-        for sensor in sensors:
-            sensor.shutdown()
+        # for sensor in sensors:
+        #     sensor.shutdown()
+        for daq in daqs:
+            daq.shutdown()
 
     event_loop.add_signal_handler(signal.SIGINT, shutdown_handler)
     event_loop.add_signal_handler(signal.SIGTERM, shutdown_handler)
 
     logger.debug("main: Started")
-    await main_run(sensors)
+    await main_run(daqs)
 
 
 def on_message(client, userdata, message):
@@ -462,6 +562,10 @@ def on_publish(client, userdata, mid):
 
 
 if __name__ == "__main__":
+    try:
+        from mock_sensor.mock import MQTTClient
+    except ModuleNotFoundError:
+        pass
 
     # set up logging - send to stdout
     log_level = logging.DEBUG
