@@ -1,0 +1,2 @@
+["make","model","serial_number","time","latitude","longitude","altitude","temperature","rh","wind_speed","wind_direction","timestamp","author","command"]
+["make","model","serial_number","2021-07-30T00:00:00Z",10,-150,50,25.0,60.0,5.299,90.487,1.627603200137E9,"envds",0]

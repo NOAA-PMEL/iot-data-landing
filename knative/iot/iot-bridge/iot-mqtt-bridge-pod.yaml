@@ -2,12 +2,16 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    run: iot-mqtt-bridge
-  name: iot-mqtt-bridge
+    # run: iot-mqtt-bridge
+    run: mqtt-bridge-acg-daq
+  # name: iot-mqtt-bridge
+  name: iot-mqtt-bridge-acg-daq
   namespace: iot
 spec:
   containers:
-  - name: iot-mqtt-bridge
-    image: wallingford.pmel.noaa.gov:8443/iot/iot-mqtt-bridge:0.3
+  # - name: iot-mqtt-bridge
+  - name: mqtt-bridge-acg-daq
+    # image: wallingford.pmel.noaa.gov:8443/iot/iot-mqtt-bridge:0.4
+    image: wallingford.pmel.noaa.gov:8443/iot/mqtt-bridge-acg-daq:0.1
     
     tty: true

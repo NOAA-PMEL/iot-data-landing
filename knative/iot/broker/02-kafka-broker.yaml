@@ -4,14 +4,17 @@ metadata:
   annotations:
     # case-sensitive
     eventing.knative.dev/broker.class: Kafka
-  name: default
-  namespace: default
+  # name: default
+  name: iot-default
+  # namespace: default
+  namespace: iot
 spec:
   # Configuration specific to this broker.
   config:
     apiVersion: v1
     kind: ConfigMap
-    name: kafka-broker-config
+    # name: kafka-broker-config
+    name: kafka-broker-iot-config
     namespace: knative-eventing
     # namespace: iot
   # Optional dead letter sink, you can specify either:

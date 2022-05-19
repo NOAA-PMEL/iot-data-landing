@@ -7,7 +7,8 @@ spec:
   template:
     spec:
       containers:
-      - image: wallingford.pmel.noaa.gov:8443/iot/iot-erddap-envds:0.3
+      - image: wallingford.pmel.noaa.gov:8443/iot/iot-erddap-envds:0.4
+        imagePullPolicy: Always
         # env:
         # - name: PORT
         #   value: "8080"
