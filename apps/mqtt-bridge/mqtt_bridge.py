@@ -19,8 +19,8 @@ L.setLevel(logging.INFO)
 class Settings(BaseSettings):
     mqtt_broker: str = 'localhost'
     mqtt_port: int = 1883
-    mqtt_topic_filter: str = 'instrument/data/+'
-    mqtt_topic_subscription: str = 'instrument/#'
+    mqtt_topic_filter: str = 'aws-id/acg-daq/+'
+    mqtt_topic_subscription: str = 'aws-id/#'
     mqtt_client_id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     knative_broker: str = 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'
     dry_run: bool = False

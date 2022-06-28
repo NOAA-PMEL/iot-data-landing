@@ -8,7 +8,7 @@ The application is configurable using environmental variables prefiex with `IOT_
 
 * `MQTT_BROKER` - MQTT broker host
 * `MQTT_PORT` - MQTT broker port
-* `MQTT_TOPIC_PREFIX` - The topic prefix to use for data, defaults to `instrument/data`. Data is sent to `$MQTT_TOPIC_PREFIX/{serial_number}`
+* `MQTT_TOPIC_PREFIX` - The topic prefix to use for data, defaults to `aws-id`. Data is sent to `{MQTT_TOPIC_PREFIX}/{source-type}/data`.
 * `DRY_RUN` - Setting to `true` will only generate the MQTT messages but not send them
 
 ## Deployment
@@ -18,14 +18,15 @@ The application is configurable using environmental variables prefiex with `IOT_
 ```shell
 $ python apps/mock-sensor/mock_sensor.py
 
-at=INFO msg="start run" sn=1234 data_rate=30 topic=instrument/data/1234
-at=INFO msg="start run" sn=2345 data_rate=30 topic=instrument/data/2345
-at=INFO msg="start run" sn=3456 data_rate=5 topic=instrument/data/3456
-at=INFO msg="start run" sn=3234 data_rate=30 topic=instrument/data/3234
-at=INFO msg="start run" sn=3345 data_rate=30 topic=instrument/data/3345
-at=INFO msg="start run" sn=3456 data_rate=5 topic=instrument/data/3456
-at=INFO msg="Data sent" sn=3456 data_rate=5 topic=instrument/data/3456 time=2022-06-28T15:45:25Z diameter="[0.1, 0.2, 0.35, 0.5, 0.75, 1.0]" temperature=26.047 rh=59.485 bin_counts="[8, 16, 23, 19, 10, 3]"
-at=INFO msg="Data sent" sn=3456 data_rate=5 topic=instrument/data/3456 time=2022-06-28T15:45:25Z latitude=9.928 longitude=-149.957 altitude=100.944 temperature=25.131 rh=55.514 wind_speed=9.838 wind_direction=88.211
+at=INFO msg="Starting data_loop" mock_type=TestSensor1D sn=1234 data_rate=30
+at=INFO msg="Starting data_loop" mock_type=TestSensor1D sn=2345 data_rate=30
+at=INFO msg="Starting data_loop" mock_type=TestSensor1D sn=3456 data_rate=5
+at=INFO msg="Starting data_loop" mock_type=TestSensor2D sn=4567 data_rate=30
+at=INFO msg="Starting data_loop" mock_type=TestSensor2D sn=5678 data_rate=30
+at=INFO msg="Starting data_loop" mock_type=TestSensor2D sn=6789 data_rate=5
+at=INFO msg=Published topic=aws-id/acg-daq/data source=/sensor/MockCo/Sensor-2/6789 time=2022-06-28T19:55:45Z diameter="[0.1, 0.2, 0.35, 0.5, 0.75, 1.0]" temperature=23.473 rh=55.737 bin_counts="[10, 13, 24, 19, 13, 6]"
+at=INFO msg=Published topic=aws-id/acg-daq/data source=/sensor/MockCo/Sensor-1/3456 time=2022-06-28T19:55:45Z latitude=10.022 longitude=-150.022 altitude=106.628 temperature=26.984 rh=62.495 wind_speed=7.953 wind_direction=108.663
+...
 ```
 
 ### Local K3D Cluster
@@ -35,12 +36,13 @@ at=INFO msg="Data sent" sn=3456 data_rate=5 topic=instrument/data/3456 time=2022
 $ make deploy-mock-sensor
 $ kubectl logs -f mock-sensor
 
-at=INFO msg="start run" sn=1234 data_rate=30 topic=instrument/data/1234
-at=INFO msg="start run" sn=2345 data_rate=30 topic=instrument/data/2345
-at=INFO msg="start run" sn=3456 data_rate=5 topic=instrument/data/3456
-at=INFO msg="start run" sn=3234 data_rate=30 topic=instrument/data/3234
-at=INFO msg="start run" sn=3345 data_rate=30 topic=instrument/data/3345
-at=INFO msg="start run" sn=3456 data_rate=5 topic=instrument/data/3456
-at=INFO msg="Data sent" sn=3456 data_rate=5 topic=instrument/data/3456 time=2022-06-28T15:45:25Z diameter="[0.1, 0.2, 0.35, 0.5, 0.75, 1.0]" temperature=26.047 rh=59.485 bin_counts="[8, 16, 23, 19, 10, 3]"
-at=INFO msg="Data sent" sn=3456 data_rate=5 topic=instrument/data/3456 time=2022-06-28T15:45:25Z latitude=9.928 longitude=-149.957 altitude=100.944 temperature=25.131 rh=55.514 wind_speed=9.838 wind_direction=88.211
+at=INFO msg="Starting data_loop" mock_type=TestSensor1D sn=1234 data_rate=30
+at=INFO msg="Starting data_loop" mock_type=TestSensor1D sn=2345 data_rate=30
+at=INFO msg="Starting data_loop" mock_type=TestSensor1D sn=3456 data_rate=5
+at=INFO msg="Starting data_loop" mock_type=TestSensor2D sn=4567 data_rate=30
+at=INFO msg="Starting data_loop" mock_type=TestSensor2D sn=5678 data_rate=30
+at=INFO msg="Starting data_loop" mock_type=TestSensor2D sn=6789 data_rate=5
+at=INFO msg=Published topic=aws-id/acg-daq/data source=/sensor/MockCo/Sensor-2/6789 time=2022-06-28T19:55:45Z diameter="[0.1, 0.2, 0.35, 0.5, 0.75, 1.0]" temperature=23.473 rh=55.737 bin_counts="[10, 13, 24, 19, 13, 6]"
+at=INFO msg=Published topic=aws-id/acg-daq/data source=/sensor/MockCo/Sensor-1/3456 time=2022-06-28T19:55:45Z latitude=10.022 longitude=-150.022 altitude=106.628 temperature=26.984 rh=62.495 wind_speed=7.953 wind_direction=108.663
+...
 ```
