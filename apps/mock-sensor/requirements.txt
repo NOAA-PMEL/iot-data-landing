@@ -1,0 +1,4 @@
+cloudevents==1.2.0
+logfmter==0.0.6
+paho-mqtt==1.6.1
+pydantic==1.9.1

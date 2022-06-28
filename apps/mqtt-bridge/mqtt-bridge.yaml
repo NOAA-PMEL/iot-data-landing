@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+  name: mqtt-bridge
+spec:
+  containers:
+  - name: mqtt-bridge
+    image: iot-data-landing-registry:5000/mqtt-bridge:1.0.2
+    env:
+      - name: MQTT_BRIDGE_MQTT_BROKER
+        value: mosquitto
+      - name: MQTT_BRIDGE_MQTT_PORT
+        value: "1883"
+      - name: MQTT_BRIDGE_MQTT_TOPIC_FILTER
+        value: instrument/data/+
+      - name: MQTT_BRIDGE_MQTT_TOPIC_SUBSCRIPTION
+        value: instrument/#
+      - name: MQTT_BRIDGE_KNATIVE_BROKER
+        value: http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default

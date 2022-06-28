@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+  name: mock-sensor
+spec:
+  containers:
+  - name: mock-sensor
+    image: iot-data-landing-registry:5000/mock-sensor:1.0.2
+    env:
+      - name: IOT_MOCK_SENSOR_MQTT_BROKER
+        value: mosquitto
+      - name: IOT_MOCK_SENSOR_MQTT_PORT
+        value: "1883"
+      - name: IOT_MOCK_SENSOR_MQTT_TOPIC_PREFIX
+        value: instrument/data
