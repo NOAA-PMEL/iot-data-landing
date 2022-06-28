@@ -220,4 +220,8 @@ Grafana:            http://localhost:3000
                     user: admin
                     pass: prom-operator
 Alert Manager       http://localhost:9093
+
+# Knative
+Kourier LB (HTTP)   http://localhost:8083
+           (HTTPS)  https://localhost:8483
 ```

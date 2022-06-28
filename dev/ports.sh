@@ -23,6 +23,8 @@ kubectl port-forward service/prometheus-kube-prometheus-prometheus 9090 &
 kubectl port-forward service/prometheus-grafana 3000:80 &
 kubectl port-forward service/prometheus-kube-prometheus-alertmanager 9093 &
 
+kubectl port-forward -n knative-serving service/kourier 8083:http2 8483:https &
+
 out="
 Minio API:          http://localhost:9000
 Minio Console:      http://localhost:9001
@@ -38,6 +40,11 @@ Grafana:            http://localhost:3000
                     user: admin
                     pass: prom-operator
 Alert Manager       http://localhost:9093
+
+# Knative
+Kourier LB (HTTP)   http://localhost:8083
+           (HTTPS)  https://localhost:8483
+
 "
 printf "$out"
 cat
