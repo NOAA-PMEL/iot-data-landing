@@ -30,7 +30,7 @@ Minio API:          http://localhost:9000
 Minio Console:      http://localhost:9001
 ERDDAP:             http://localhost:8081
 Mosquitto (HTTP):   http://localhost:1883
-Mosquitto (HTTPS):  http://localhost:8883
+          (HTTPS):  https://localhost:8883
 
 Kafka broker:       localhost:9092
 
