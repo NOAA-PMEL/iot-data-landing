@@ -182,6 +182,22 @@ $ kubectl port-forward service/minio 9001:console
 
 The Minio console is available at [http://localhost:9001](http://localhost:9001/) and the Minio API endpoint is available at http://localhost:9000.
 
+## Install Monitoring
+
+```shell
+$ helm install prometheus prometheus-community/kube-prometheus-stack
+
+NAME: prometheus
+LAST DEPLOYED: Mon Jun 27 13:53:28 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+NOTES:
+kube-prometheus-stack has been installed. Check its status by running:
+  kubectl --namespace default get pods -l "release=prometheus"
+
+Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
+```
 
 # Forward all ports
 
@@ -197,4 +213,11 @@ Mosquitto (HTTP):   http://localhost:1883
 Mosquitto (HTTPS):  https://localhost:8883
 
 Kafka broker:       localhost:9092
+
+# Monitoring
+Prometheus:         http://localhost:9090
+Grafana:            http://localhost:3000
+                    user: admin
+                    pass: prom-operator
+Alert Manager       http://localhost:9093
 ```

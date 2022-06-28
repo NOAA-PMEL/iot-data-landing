@@ -19,6 +19,10 @@ kubectl port-forward service/mosquitto 8883:https &
 
 kubectl port-forward -n kafka service/iot-cluster-kafka-bootstrap 9092 &
 
+kubectl port-forward service/prometheus-kube-prometheus-prometheus 9090 &
+kubectl port-forward service/prometheus-grafana 3000:80 &
+kubectl port-forward service/prometheus-kube-prometheus-alertmanager 9093 &
+
 out="
 Minio API:          http://localhost:9000
 Minio Console:      http://localhost:9001
@@ -28,6 +32,12 @@ Mosquitto (HTTPS):  http://localhost:8883
 
 Kafka broker:       localhost:9092
 
+# Monitoring
+Prometheus:         http://localhost:9090
+Grafana:            http://localhost:3000
+                    user: admin
+                    pass: prom-operator
+Alert Manager       http://localhost:9093
 "
 printf "$out"
 cat
