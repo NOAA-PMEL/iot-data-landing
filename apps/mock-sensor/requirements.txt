@@ -1,0 +1,4 @@
+asyncio_mqtt==0.12.1
+cloudevents==1.2.0
+logfmter==0.0.6
+pydantic==1.9.1

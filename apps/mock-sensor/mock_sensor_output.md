@@ -1,15 +1,17 @@
 # IoT MockSensor output
 
-Below are examples of possible sensor output. These are json representations of the MQTT payload created using the CloudEvents spec. The first is the data only while the second includes a metadata portion that could be used to register the sensor at some point. 
+Below are examples of possible sensor output. These are json representations of the MQTT payload created using the CloudEvents spec. The first is the data only while the second includes a metadata portion that could be used to register the sensor at some point.
 
 The current version of the MockSensor connects to a simple MQTT broker (Mosquitto) without TLS. My plan is to add functionality:
- - allow for TLS connections
- - allow for payload encryption
- - integrate with AWS IoT broker
 
-For now, this is a starting point for the payload and we can modify as necessary. 
+- allow for TLS connections
+- allow for payload encryption
+- integrate with AWS IoT broker
+
+For now, this is a starting point for the payload and we can modify as necessary.
 
 ### Payload: Data only
+
 ```
 {
     "attributes": {
@@ -36,6 +38,7 @@ For now, this is a starting point for the payload and we can modify as necessary
 ```
 
 ### Payload: Data with metadata
+
 ```
 {
     "attributes": {
