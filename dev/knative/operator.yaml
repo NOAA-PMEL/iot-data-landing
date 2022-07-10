@@ -35,3 +35,14 @@ spec:
   source:
     kafka:
       enabled: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-deployment
+  namespace: knative-serving
+data:
+  # List of repositories for which tag to digest resolving should be skipped
+  # https://knative.dev/docs/serving/configuration/deployment/#skipping-tag-resolution
+  registries-skipping-tag-resolving: "kind.local,ko.local,dev.local,iot-data-landing-registry:5000"
+  queue-sidecar-image: gcr.io/knative-releases/knative.dev/serving/cmd/queue

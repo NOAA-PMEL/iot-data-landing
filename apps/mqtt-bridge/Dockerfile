@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster
+FROM python:3.10-slim
 
 WORKDIR /app
 
@@ -7,4 +7,4 @@ RUN pip3 install -r requirements.txt
 
 COPY ./mqtt_bridge.py .
 
-CMD [ "python3", "mqtt_bridge.py"]
+CMD [ "python3", "mqtt_bridge.py" ]

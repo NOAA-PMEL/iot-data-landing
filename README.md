@@ -1,6 +1,6 @@
 # iot-data-landing
-IoT Data Landing Project
 
+IoT Data Landing Project
 
 ## Development Setup
 
@@ -8,28 +8,30 @@ Development requires existing installations of Python and Docker.
 
 1. Clone this repository
 
-    ```bash
-    $ git clone git@github.com:derekcoffman/iot-data-landing.git
+    ```shell
+    git clone git@github.com:derekcoffman/iot-data-landing.git
     ```
 
 1. Decrypt the repository with `git crypt`. This requires [`git-crypt`](https://github.com/AGWA/git-crypt) be [installed](https://github.com/AGWA/git-crypt/blob/master/INSTALL.md) and that your gpg key be added to the repository by someone that already has unencrypted access.
 
-    ```bash
-    $ git-crypt unlock
+    ```shell
+    git-crypt unlock
     ```
 
-1. Install required Python dependencies
+1. Follow the instructions in the [Development README](dev/README.md) to start the entire stack locally in a Kubernetes cluster. If you are coming back to development and have already run those steps, make sure the `iot-data-landing` cluster is started. To start the clusert run `k3d cluster start iot-data-landing`.
 
+    ```shell
+    $ k3d cluster list
+
+    NAME               SERVERS   AGENTS   LOADBALANCER
+    iot-data-landing   1/1       1/1      true
     ```
-    $ pip install -r requirements.txt
-    ```
 
-1. Follow the instructions in the [Development README](dev/README.md) to start the entire stack locally in a Kubernetes cluster.
+1. Build, push, and deploy all `apps` to your k3d cluster
 
-1. Start the mock sever:
-
-    ```
-    python mock_sensor/mock.py
+    ```shell
+    $ make deploy
+    ...
     ```
 
 ## New Collaborators
@@ -69,12 +71,11 @@ After that an existing collaborator will need to do the following:
 
 1. Submit PR with new user. The above command creates a new commit.
 
-
 ## Things
 
 Each thing, whether real or mocked, needs a certificate and private key to publish data to the AWS MQTT Server. To generate a new thing along with a certificate and key, run the `scripts/create_thing.sh` script and pass it the name of the thing you would like to generate.
 
-```
+```shell
 ./scripts/create_thing.sh my-first-new-thing
 ```
 
