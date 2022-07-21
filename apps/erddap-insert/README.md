@@ -21,8 +21,9 @@ Given the following CloudEvent
         "time": "2022-06-28T15: 56: 25.003173+00: 00"
     },
     "data": {
+        "metadata": {},
         "data": {
-            "time": "2022-06-28T15: 56: 25Z",
+            "time": "2022-06-28T15:56:25Z",
             "diameter": [
                 0.1,
                 0.2,
@@ -51,7 +52,7 @@ The `source` field is parsed into the following:
 * `make` - MockCo
 * `model` - Sensor-2
 * `serial` - 3456
-* `dataset_id` - MockCo_Sensor-2 - This must already exist as a dataset in ERDDAP before data will be added to ERDDAP.
+* `thing_id` - MockCo_Sensor-2 - This must already exist as a dataset in ERDDAP before data will be added to ERDDAP.
 
 ## Configuration
 
