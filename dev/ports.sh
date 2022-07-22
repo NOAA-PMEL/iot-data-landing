@@ -18,6 +18,8 @@ kubectl port-forward service/erddap 8444:https &
 kubectl port-forward service/mosquitto 1883:http &
 kubectl port-forward service/mosquitto 8883:https &
 
+kubectl port-forward service/redis-server 6379:http &
+
 kubectl port-forward -n kafka service/iot-cluster-kafka-bootstrap 9092 &
 
 kubectl port-forward service/prometheus-kube-prometheus-prometheus 9090 &
