@@ -39,7 +39,10 @@ def register_thing(thing_id, ce):
     registered = False
     updated = False
 
-    payload = ce.data['data']
+
+    # ce.data = {"data":{}, "metadata":{}}
+    # payload = ce.data['data']
+    payload = ce.data
 
     if "metadata" in payload and payload['metadata']:
         metadata = payload["metadata"]
