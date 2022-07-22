@@ -113,17 +113,20 @@ class ACGDAQ(DataSource):
         while True:
             data = await self.data_buffer.get()
             try:
-                sensor_atts = data["attributes"]
+                sensor_atts = data["instance"]
                 sensor_make = sensor_atts["make"]
                 sensor_model = sensor_atts["model"]
-                sn = data["instance"]["sn"]
+                sn = sensor_atts["serial"]
                 attributes = {
                     "type": f"gov.noaa.pmel.acg.data.insert.envds.v2",
                     "source": f"/sensor/{sensor_make}/{sensor_model}/{sn}",
                     "datacontenttype": "application/json; charset=utf-8",
                 }
 
-                payload = {"data": data["variables"]}
+                payload = {
+                    "metadata": data.get('metadata', {}),
+                    "data": data.get('data', {})
+                }
                 ce = CloudEvent(attributes=attributes, data=payload)
                 await self.send_buffer.put(ce)
             except KeyError:

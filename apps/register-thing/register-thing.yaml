@@ -1,0 +1,28 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: register-thing
+spec:
+  template:
+    spec:
+      containers:
+      - image: iot-data-landing-registry:5000/register-thing:1.0.1
+        imagePullPolicy: Always
+        env:
+          - name: IOT_REGISTER_THING_REDIS_URL
+            value: "redis://redis-server:6379/0"
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: register-thing
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: gov.noaa.pmel.acg.data.insert.envds.v2
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: register-thing

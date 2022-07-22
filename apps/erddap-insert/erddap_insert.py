@@ -1,3 +1,4 @@
+import json
 import logging
 from pathlib import Path
 
@@ -38,6 +39,9 @@ def insert():
 
     try:
         ce = from_http(request.headers, request.get_data())
+        # to support local testing...
+        if isinstance(ce.data, str):
+            ce.data = json.loads(ce.data)
     except InvalidStructuredJSON:
         L.error("not a valid cloudevent")
         return "not a valid cloudevent", 400

@@ -3,8 +3,8 @@ import asyncio
 import logging
 
 from logfmter import Logfmter
+from asyncio_mqtt import Client
 from pydantic import BaseSettings
-from asyncio_mqtt import Client, MqttError
 
 from sources import ACGDAQ
 from sensors import TestSensor1D, TestSensor2D

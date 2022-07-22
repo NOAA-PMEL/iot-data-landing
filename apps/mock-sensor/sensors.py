@@ -7,9 +7,6 @@ import logging
 from datetime import datetime
 
 from logfmter import Logfmter
-from paho.mqtt.properties import Properties
-from paho.mqtt.packettypes import PacketTypes
-from cloudevents.http import CloudEvent, to_structured
 
 handler = logging.StreamHandler()
 handler.setFormatter(Logfmter())
@@ -84,7 +81,6 @@ class MockSensor(abc.ABC):
 class TestSensor1D(MockSensor):
 
     metadata = {
-        "attributes": {"make": "MockCo", "model": "Sensor-1",},
         "variables": {
             "time": {"shape": ["time"], "attributes": {"long_name": "Time"},},
             "latitude": {
@@ -148,10 +144,20 @@ class TestSensor1D(MockSensor):
             variables["wind_direction"] = round(90 + random.uniform(-20, 20), 3)
 
             data = {
-                "attributes": self.metadata["attributes"],
-                "instance": {"sn": self.sn},
-                "variables": variables,
+                "data": variables,
+                "instance": {
+                    "make": "MockCo",
+                    "model": "Sensor-1",
+                    "serial": self.sn
+                }
             }
+            # If we send a message on an even 10-minute mark then
+            # include the metadata packet. This is meant to mock
+            # occasionally updating a station-sensors's metadata
+            if dt.minute % 10 == 0:
+                data["metadata"] = self.metadata
+                data["metadata"]["attributes"] = data["instance"]
+
             if self.data_buffer:
                 await self.data_buffer.put(data)
 
@@ -161,7 +167,6 @@ class TestSensor1D(MockSensor):
 class TestSensor2D(MockSensor):
 
     metadata = {
-        "attributes": {"make": "MockCo", "model": "Sensor-2",},
         "variables": {
             "time": {"shape": ["time"], "attributes": {"long_name": "Time"},},
             "diameter": {
@@ -172,21 +177,6 @@ class TestSensor2D(MockSensor):
                     "units": "micron"
                 }
             },
-            # "latitude": {
-            #     "type": "double",
-            #     "shape": ["time"],
-            #     "attributes": {"long_name": "Latitude", "units": "degrees_north"},
-            # },
-            # "longitude": {
-            #     "type": "double",
-            #     "shape": ["time"],
-            #     "attributes": {"long_name": "Longitude", "units": "degrees_east"},
-            # },
-            # "altitude": {
-            #     "type": "double",
-            #     "shape": ["time"],
-            #     "attributes": {"long_name": "Altitude", "units": "m"},
-            # },
             "temperature": {
                 "type": "double",
                 "shape": ["time"],
@@ -235,10 +225,20 @@ class TestSensor2D(MockSensor):
             variables["bin_counts"] = count
 
             data = {
-                "attributes": self.metadata["attributes"],
-                "instance": {"sn": self.sn},
-                "variables": variables,
+                "data": variables,
+                "instance": {
+                    "make": "MockCo",
+                    "model": "Sensor-2",
+                    "serial": self.sn
+                }
             }
+            # If we send a message on an even 10-minute mark then
+            # include the metadata packet. This is meant to mock
+            # occasionally updating a station-sensors's metadata
+            if dt.minute % 10 == 0:
+                data["metadata"] = self.metadata
+                data["metadata"]["attributes"] = data["instance"]
+
             if self.data_buffer:
                 await self.data_buffer.put(data)
 
