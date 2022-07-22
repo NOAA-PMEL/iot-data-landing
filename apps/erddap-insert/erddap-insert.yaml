@@ -10,7 +10,8 @@ spec:
         imagePullPolicy: Always
         env:
           - name: IOT_ERDDAP_INSERT_URL
-            value: "http://erddap:8080/erddap/tabledap"
+            # value: "http://erddap:8080/erddap/tabledap"
+            value: "https://erddap:8443/erddap/tabledap"
           - name: IOT_ERDDAP_INSERT_AUTHOR
             value: "super_secret_author"
 ---

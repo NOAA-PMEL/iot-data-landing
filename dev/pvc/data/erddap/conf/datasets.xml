@@ -1,4 +1,508 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <erddapDatasets>
+
+<!-- The tags below are described in setupDatasetsXml.html.
+     The defaults listed below are as of ERDDAP v2.00. -->
+<cacheMinutes>1</cacheMinutes>                                     <!-- default=60 --> 
+<decompressedCacheMaxGB></decompressedCacheMaxGB>                 <!-- default=10 --> 
+<decompressedCacheMaxMinutesOld></decompressedCacheMaxMinutesOld> <!-- default=15 --> 
+<drawLandMask></drawLandMask>                                     <!-- "over", "under" (default), "outline", or "off" -->
+<emailDiagnosticsToErdData></emailDiagnosticsToErdData>           <!-- "true (default) or "false" -->
+<graphBackgroundColor></graphBackgroundColor>                     <!-- 0xAARRGGBB, default is 0xffccccff -->
+<ipAddressMaxRequests></ipAddressMaxRequests>                     <!-- current default=7 -->
+<ipAddressMaxRequestsActive></ipAddressMaxRequestsActive>         <!-- current default=2 -->
+<ipAddressUnlimited></ipAddressUnlimited>                         <!-- default=(empty) -->
+<loadDatasetsMinMinutes></loadDatasetsMinMinutes>                 <!-- usually=default=15 -->
+<loadDatasetsMaxMinutes></loadDatasetsMaxMinutes>                 <!-- default=60 -->
+<logLevel></logLevel> <!-- "warning" (fewest messages), "info" (default), or "all" (most messages) -->
+<nGridThreads></nGridThreads>                                     <!-- default=1 -->
+<nTableThreads></nTableThreads>                                   <!-- default=1 -->
+<partialRequestMaxBytes></partialRequestMaxBytes>                 <!-- default=490000000 -->
+<partialRequestMaxCells></partialRequestMaxCells>                 <!-- default=10000000 -->
+<slowDownTroubleMillis></slowDownTroubleMillis>                   <!-- default=1000 -->
+<unusualActivity></unusualActivity>                               <!-- default=10000 -->
+<!-- The defaults for the following tags are in messages.xml. -->
+<startHeadHtml5></startHeadHtml5>                                
+<endBodyHtml5></endBodyHtml5>
+<standardLicense></standardLicense>
+<standardContact></standardContact>
+<standardDataLicenses></standardDataLicenses>
+<standardDisclaimerOfEndorsement></standardDisclaimerOfEndorsement>
+<standardDisclaimerOfExternalLinks></standardDisclaimerOfExternalLinks>
+<standardGeneralDisclaimer></standardGeneralDisclaimer>
+
+<standardPrivacyPolicy><![CDATA[
+<br>&nbsp;
+<hr>
+<h2><a class="selfLink" id="privacyPolicy" href="#privacyPolicy" rel="help">Privacy Policy</a></h2>
+ERDDAP follows 
+<a rel="bookmark" href="https://www.noaa.gov/protecting-your-privacy"
+  >NOAA's Privacy Policy Guidelines</a>.
+]]></standardPrivacyPolicy>
+
+<startBodyHtml5><![CDATA[ 
+<body>
+<table class="compact nowrap" style="width:100%; background-color:#128CB5;"> 
+  <tr> 
+    <td style="text-align:center; width:80px;"><a rel="bookmark"
+      href="https://www.noaa.gov/"><img 
+      title="National Oceanic and Atmospheric Administration" 
+      src="&erddapUrl;/images/noaab.png" alt="NOAA"
+      style="vertical-align:middle;"></a></td> 
+    <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
+      <strong>ERDDAP</strong>
+      <br><small><small><small>Easier access to scientific data</small></small></small>
+      </td> 
+    <td style="text-align:right; font-size:small;"> 
+      &loginInfo; &nbsp; &nbsp;
+      <br>Brought to you by 
+      <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
+      href="https://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service" rel="bookmark"
+      href="https://www.fisheries.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center" rel="bookmark"
+      href="https://swfsc.noaa.gov">SWFSC</a> 
+      <a title="Environmental Research Division" rel="bookmark"
+      href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
+      &nbsp; &nbsp;
+      </td> 
+  </tr> 
+</table>
+]]></startBodyHtml5>
+
+<theShortDescriptionHtml><![CDATA[ 
+<h1>ERDDAP</h1>
+ERDDAP is a data server that gives you a simple, consistent way to download 
+subsets of scientific datasets in common file formats and make graphs and maps. 
+This particular ERDDAP installation has oceanographic data
+(for example, data from satellites and buoys).
+
+[standardShortDescriptionHtml]
+
+]]></theShortDescriptionHtml>
+
+
     <requestBlacklist />
+<!-- <dataset type="EDDTableFromHttpGet" datasetID="MockCo_Sensor-1_1234" active="true"> -->
+<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk
+  of datasets.xml below to add all of the metadata (especially "units"). -->
+<dataset type="EDDTableFromHttpGet" datasetID="MockCo_Sensor-1" active="true">
+    <reloadEveryNMinutes>1440</reloadEveryNMinutes>
+    <updateEveryNMillis>-1</updateEveryNMillis>
+    <fileDir>/erddapData/acg/sensor/MockCo/Sensor-1</fileDir>
+    <fileNameRegex>.*\.jsonl</fileNameRegex>
+    <recursive>true</recursive>
+    <pathRegex>.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <sortedColumnSourceName></sortedColumnSourceName>
+    <sortFilesBySourceNames>make,model,serial_number,time</sortFilesBySourceNames>
+    <!-- <fileTableInMemory>false</fileTableInMemory> -->
+    <fileTableInMemory>true</fileTableInMemory>
+    <accessibleViaFiles>true</accessibleViaFiles>
+    <!-- sourceAttributes>
+    </sourceAttributes -->
+    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...
+        <att name="cdm_timeseries_variables">station_id, longitude, latitude</att>
+        <att name="subsetVariables">station_id, longitude, latitude</att>
+    -->
+    <addAttributes>
+        <att name="cdm_data_type">Point</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="httpGetDirectoryStructure">serial_number/1year/1day</att>
+        <att name="httpGetKeys">envds_secretkey,super_secret_author</att>
+        <att name="httpGetRequiredVariables">make,model,serial_number,time</att>
+        <att name="infoUrl">https://pmel.noaa.gov</att>
+        <att name="institution">NOAA/PMEL</att>
+        <att name="keywords">altitude, atmosphere, atmospheric, author, command, data, direction, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, height, latitude, local, longitude, make, model, number, science, serial, serial_number, source, speed, station, statistics, surface, temperature, time, timestamp, wind, wind_direction, wind_from_direction, wind_speed, winds</att>
+        <att name="keywords_vocabulary">GCMD Science Keywords</att>
+        <att name="license">[standard]</att>
+        <att name="sourceUrl">(local files)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="subsetVariables">make</att>
+        <att name="summary">IoT Data - envds
+
+NOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>
+        <att name="testOutOfDate">now-1day</att>
+        <att name="title">Data from a local source.</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>make</sourceName>
+        <destinationName>make</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Make</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>model</sourceName>
+        <destinationName>model</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Model</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>serial_number</sourceName>
+        <destinationName>serial_number</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Serial Number</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>time</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Time</att>
+            <att name="standard_name">time</att>
+            <att name="time_precision">1970-01-01T00:00:00Z</att>
+            <att name="units">yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>latitude</sourceName>
+        <destinationName>latitude</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">90.0</att>
+            <att name="colorBarMinimum" type="double">-90.0</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Latitude</att>
+            <att name="missing_value" type="double">NaN</att>
+            <att name="standard_name">latitude</att>
+            <att name="units">degrees_north</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>longitude</sourceName>
+        <destinationName>longitude</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">180.0</att>
+            <att name="colorBarMinimum" type="double">-180.0</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Longitude</att>
+            <att name="missing_value" type="double">NaN</att>
+            <att name="standard_name">longitude</att>
+            <att name="units">degrees_east</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>altitude</sourceName>
+        <destinationName>altitude</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Altitude</att>
+            <att name="missing_value" type="double">NaN</att>
+            <att name="standard_name">altitude</att>
+            <att name="units">m</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>temperature</sourceName>
+        <destinationName>temperature</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Temperature</att>
+            <att name="long_name">Temperature</att>
+            <att name="missing_value" type="float">NaN</att>
+            <att name="units">degrees_C</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>rh</sourceName>
+        <destinationName>rh</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">RH</att>
+            <att name="missing_value" type="float">NaN</att>
+            <att name="units">percent</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>wind_speed</sourceName>
+        <destinationName>wind_speed</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">15.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Wind</att>
+            <att name="long_name">Wind Speed</att>
+            <att name="missing_value" type="float">NaN</att>
+            <att name="standard_name">wind_speed</att>
+            <att name="units">m s-1</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>wind_direction</sourceName>
+        <destinationName>wind_direction</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">360.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Wind</att>
+            <att name="long_name">Wind From Direction</att>
+            <att name="missing_value" type="float">NaN</att>
+            <att name="standard_name">wind_from_direction</att>
+            <att name="units">degree</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>timestamp</sourceName>
+        <destinationName>timestamp</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="comment">The values in this column are added by ERDDAP to identify when each row of data was added to the data file. NOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Timestamp</att>
+            <att name="missing_value" type="double">NaN</att>
+            <att name="time_precision">1970-01-01T00:00:00.000Z</att>
+            <att name="units">seconds since 1970-01-01T00:00:00Z</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>author</sourceName>
+        <destinationName>author</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="comment">The values in this column identify the author who added each row of data to the dataset.</att>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Author</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>command</sourceName>
+        <destinationName>command</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="comment">This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>
+            <att name="flag_meanings">insert delete</att>
+            <att name="flag_values" type="byteList">0 1</att>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Command</att>
+            <att name="missing_value" type="byte">127</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+
+<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk
+  of datasets.xml below to add all of the metadata (especially "units"). -->
+<dataset type="EDDTableFromHttpGet" datasetID="MockCo_Sensor-2" active="true">
+    <!-- <reloadEveryNMinutes>1440</reloadEveryNMinutes> -->
+    <reloadEveryNMinutes>1440</reloadEveryNMinutes>
+    <updateEveryNMillis>-1</updateEveryNMillis>
+    <!-- <fileDir>/erddapData/acg/sensor/</fileDir> -->
+    <fileDir>/erddapData/acg/sensor/MockCo/Sensor-2</fileDir>
+    <fileNameRegex>.*\.jsonl</fileNameRegex>
+    <recursive>true</recursive>
+    <pathRegex>.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <sortedColumnSourceName></sortedColumnSourceName>
+    <sortFilesBySourceNames>make,model,serial_number,time</sortFilesBySourceNames>
+    <fileTableInMemory>true</fileTableInMemory>
+    <accessibleViaFiles>true</accessibleViaFiles>
+    <!-- sourceAttributes>
+    </sourceAttributes -->
+    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...
+        <att name="cdm_timeseries_variables">station_id, longitude, latitude</att>
+        <att name="subsetVariables">station_id, longitude, latitude</att>
+    -->
+    <addAttributes>
+        <att name="cdm_data_type">other</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <!-- <att name="httpGetDirectoryStructure">make/model/serial_number/1year/1day</att> -->
+        <att name="httpGetDirectoryStructure">serial_number/1year/1day</att>
+        <att name="httpGetKeys">envds_secretkey,super_secret_author</att>
+        <att name="httpGetRequiredVariables">make,model,serial_number,time,diameter</att>
+        <att name="infoUrl">???</att>
+        <att name="institution">???</att>
+        <att name="keywords">author, bin, bin_counts, command, counts, data, diameter, local, make, model, number, serial, serial_number, source, statistics, temperature, time, timestamp</att>
+        <att name="license">[standard]</att>
+        <att name="sourceUrl">(local files)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="subsetVariables">make</att>
+        <att name="summary">Data from a local source.
+
+NOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>
+        <att name="testOutOfDate">now-1day</att>
+        <att name="title">Data from a local source.</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>make</sourceName>
+        <destinationName>make</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Make</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>model</sourceName>
+        <destinationName>model</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Model</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>serial_number</sourceName>
+        <destinationName>serial_number</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Serial Number</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>time</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Time</att>
+            <att name="standard_name">time</att>
+            <att name="time_precision">1970-01-01T00:00:00Z</att>
+            <att name="units">yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>diameter</sourceName>
+        <destinationName>diameter</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Diameter</att>
+            <att name="missing_value" type="float">NaN</att>
+            <att name="units">um</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>temperature</sourceName>
+        <destinationName>temperature</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Temperature</att>
+            <att name="long_name">Temperature</att>
+            <att name="missing_value" type="float">NaN</att>
+            <att name="units">degrees_C</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>rh</sourceName>
+        <destinationName>rh</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">RH</att>
+            <att name="missing_value" type="float">NaN</att>
+            <att name="units">percent</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>bin_counts</sourceName>
+        <destinationName>bin_counts</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Bin Counts</att>
+            <att name="missing_value" type="double">NaN</att>
+            <att name="units">counts</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>timestamp</sourceName>
+        <destinationName>timestamp</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="comment">The values in this column are added by ERDDAP to identify when each row of data was added to the data file. NOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Timestamp</att>
+            <att name="missing_value" type="double">NaN</att>
+            <att name="time_precision">1970-01-01T00:00:00.000Z</att>
+            <att name="units">seconds since 1970-01-01T00:00:00Z</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>author</sourceName>
+        <destinationName>author</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="comment">The values in this column identify the author who added each row of data to the dataset.</att>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Author</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>command</sourceName>
+        <destinationName>command</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="comment">This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>
+            <att name="flag_meanings">insert delete</att>
+            <att name="flag_values" type="byteList">0 1</att>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Command</att>
+            <att name="missing_value" type="byte">127</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+
 </erddapDatasets>

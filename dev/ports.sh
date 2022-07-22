@@ -13,6 +13,7 @@ kubectl port-forward service/minio 9000:api &
 kubectl port-forward service/minio 9001:console &
 
 kubectl port-forward service/erddap 8081:http &
+kubectl port-forward service/erddap 8444:https &
 
 kubectl port-forward service/mosquitto 1883:http &
 kubectl port-forward service/mosquitto 8883:https &

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     host: str = '0.0.0.0'
     port: int = 8787
     debug: bool = False
-    url: str = 'http://localhost:8081/erddap/tabledap'
+    url: str = 'https://localhost:8443/erddap/tabledap'
     author: str = 'super_secret_author'
     dry_run: bool = False
 
@@ -56,7 +56,7 @@ def insert():
         'make': make,
         'model': model,
         'serial_number': sn,
-        'author': config.author
+        # 'author': config.author
     }
 
     try:
@@ -74,13 +74,17 @@ def insert():
         try:
             values = data[var]
             if isinstance(values, list):
-                params[var] = f"%5B{','.join([str(x) for x in values])}%5D"
+                # changed to allow httpx to encode properly...I think it was being encoded twice
+                # params[var] = f"%5B{','.join([str(x) for x in values])}%5D"
+                params[var] = f"[{','.join([str(x) for x in values])}]"
             else:
                 params[var] = data[var]
         except KeyError:
             L.debug("Empty variable", extra=params)
             params[var] = "NaN"
 
+    # had to move this to the end of the params - erddap requires is to be the last parameter
+    params["author"] = config.author
     if config.dry_run is False:
         try:
             r = httpx.post(
@@ -90,7 +94,7 @@ def insert():
             )
             L.info(f"Sent POST to ERRDAP @ {r.url}", extra=params)
             r.raise_for_status()
-            return r.json
+            return r.json()
         except httpx.HTTPError as e:
             L.error(str(e))
             return str(e)
