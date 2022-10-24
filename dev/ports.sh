@@ -31,7 +31,10 @@ kubectl port-forward -n knative-serving service/kourier 8083:http2 8483:https &
 out="
 Minio API:          http://localhost:9000
 Minio Console:      http://localhost:9001
-ERDDAP:             http://localhost:8081
+
+ERDDAP (HTTP):      http://localhost:8081
+       (HTTPS):     https://localhost:8444
+
 Mosquitto (HTTP):   http://localhost:1883
           (HTTPS):  https://localhost:8883
 

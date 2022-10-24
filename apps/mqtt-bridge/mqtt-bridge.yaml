@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
   - name: mqtt-bridge
-    image: iot-data-landing-registry:5000/mqtt-bridge:1.0.3
+    image: iot-data-landing-registry:5000/mqtt-bridge:1.0.4
     imagePullPolicy: Always
     env:
       - name: MQTT_BRIDGE_MQTT_BROKER

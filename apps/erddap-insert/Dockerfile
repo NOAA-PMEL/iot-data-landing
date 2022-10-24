@@ -10,6 +10,7 @@ WORKDIR $APP_HOME
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
+COPY VERSION .
 COPY ./erddap_insert.py ./app.py
 COPY ./registry.py ./registry.py
 

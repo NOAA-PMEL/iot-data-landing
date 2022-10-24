@@ -4,7 +4,25 @@
 
 https://k3d.io/
 
-## Create cluster
+## Start existing cluster
+
+```shell
+# Start cluster
+$ k3d cluster start iot-data-landing
+
+# Get and set registry port
+$ docker ps -f name=iot-data-landing-registry -l --format {{.Ports}}
+0.0.0.0:39727->5000/tcp
+$ export DOCKER_REPO_URL="k3d-registry.localhost:39727"
+
+# Setup kubectl
+$ export KUBECONFIG=$(k3d kubeconfig write iot-data-landing)
+
+# Deploy `apps` folder
+$ make deploy
+```
+
+## Create new cluster
 
 This cluster uses a persistent volume at `./dev/pvc/data` and forwards local ports `8080` and `8443` to the cluster's Traefik load balancer. The load balancer isn't currently used, but may be in the future.
 

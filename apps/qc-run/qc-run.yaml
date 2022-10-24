@@ -1,0 +1,40 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: qc-run
+spec:
+  template:
+    spec:
+      containers:
+      - image: iot-data-landing-registry:5000/qc-run:1.0.9
+        imagePullPolicy: Always
+        env:
+          - name: IOT_QC_RUN_KNATIVE_BROKER
+            value: http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default
+          - name: IOT_QC_RUN_S3_ENDPOINT
+            value: http://minio:9000
+          - name: IOT_QC_RUN_S3_USER
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: MINIO_ROOT_USER
+          - name: IOT_QC_RUN_S3_PASS
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: MINIO_ROOT_PASSWORD
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: qc-run
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: gov.noaa.pmel.acg.data.insert.envds.v2
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: qc-run

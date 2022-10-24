@@ -11,7 +11,8 @@ COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY VERSION .
-COPY ./register_thing.py ./app.py
+COPY ./configs configs
+COPY ./qc_run.py ./app.py
 
 # Run the web service on container startup. Here we use the gunicorn
 # webserver, with one worker process and 8 threads.

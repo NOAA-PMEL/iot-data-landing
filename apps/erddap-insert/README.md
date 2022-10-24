@@ -18,7 +18,7 @@ Given the following CloudEvent
         "source": "/sensor/MockCo/Sensor-2/3456",
         "type": "gov.noaa.pmel.acg.data.insert.envds.v2",
         "datacontenttype": "application/json; charset=utf-8",
-        "time": "2022-06-28T15: 56: 25.003173+00: 00"
+        "time": "2022-06-28T15:56:25.003173+00:00"
     },
     "data": {
         "metadata": {},

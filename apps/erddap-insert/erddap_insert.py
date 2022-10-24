@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     host: str = '0.0.0.0'
     port: int = 8787
     debug: bool = False
-    url: str = 'https://localhost:8443/erddap/tabledap'
+    url: str = 'https://localhost:8444/erddap/tabledap'
     author: str = 'super_secret_author'
     dry_run: bool = False
 
@@ -51,12 +51,22 @@ def insert():
     model = parts[3]
     sn = parts[4]
     registry_id = f"{make}_{model}"
-    url = f"{config.url}/{registry_id}.insert"
+
+    # Send to a specific datasets based on the `type`
+    # CloudEvent field.
+    send_all_vars = False
+    erddap_dataset = f"{make}_{model}"
+
+    if 'type' in ce and ce['type'].endswith('.qc'):
+        erddap_dataset += '_QC'
+        send_all_vars = True
+
+    url = f"{config.url}/{erddap_dataset}.insert"
+
     params = {
         'make': make,
         'model': model,
-        'serial_number': sn,
-        # 'author': config.author
+        'serial_number': sn
     }
 
     try:
@@ -69,22 +79,28 @@ def insert():
 
     data = ce.data["data"]
 
-    # need to check shape here?
-    for var in variables:
-        try:
-            values = data[var]
-            if isinstance(values, list):
-                # changed to allow httpx to encode properly...I think it was being encoded twice
-                # params[var] = f"%5B{','.join([str(x) for x in values])}%5D"
-                params[var] = f"[{','.join([str(x) for x in values])}]"
-            else:
-                params[var] = data[var]
-        except KeyError:
-            L.debug("Empty variable", extra=params)
-            params[var] = "NaN"
+    if send_all_vars is False:
+        # Base this on defined metadata variables, which don't include QC vars
+        for var in variables:
+            try:
+                values = data[var]
+                if isinstance(values, list):
+                    # changed to allow httpx to encode properly...I think it was being encoded twice
+                    # params[var] = f"%5B{','.join([str(x) for x in values])}%5D"
+                    params[var] = f"[{','.join([str(x) for x in values])}]"
+                else:
+                    params[var] = data[var]
+            except KeyError:
+                L.debug("Empty variable", extra=params)
+                params[var] = "NaN"
+    else:
+        # Base the data coming in the message
+        params.update(data)
 
     # had to move this to the end of the params - erddap requires is to be the last parameter
     params["author"] = config.author
+    L.info(params)
+
     if config.dry_run is False:
         try:
             r = httpx.post(

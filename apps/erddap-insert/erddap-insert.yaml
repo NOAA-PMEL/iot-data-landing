@@ -6,7 +6,7 @@ spec:
   template:
     spec:
       containers:
-      - image: iot-data-landing-registry:5000/erddap-insert:1.0.12
+      - image: iot-data-landing-registry:5000/erddap-insert:1.0.18
         imagePullPolicy: Always
         env:
           - name: IOT_ERDDAP_INSERT_URL
@@ -24,6 +24,21 @@ spec:
   filter:
     attributes:
       type: gov.noaa.pmel.acg.data.insert.envds.v2
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: erddap-insert
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: erddap-insert-qc
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: gov.noaa.pmel.acg.data.insert.envds.v2.qc
   subscriber:
     ref:
       apiVersion: v1

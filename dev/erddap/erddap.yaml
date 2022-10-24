@@ -34,19 +34,11 @@ metadata:
 spec:
   ports:
     - name: http
-      # protocol: TCP
       port: 8080
       targetPort: 8080
     - name: https
-      # protocol: TCP
       port: 8443
       targetPort: 8443
-  # ports:
-  #   - protocol: TCP
-  #     name: http
-  #     port: 8080
-  #     name: https
-  #     port: 8443
   selector:
     app: erddap
 ---
@@ -67,7 +59,7 @@ spec:
     spec:
       containers:
         - name: erddap
-          image: axiom/docker-erddap:2.18
+          image: axiom/docker-erddap:latest@sha256:aef1e33e6073a05b5a85f1b430188782bde3c61fc67a7b94566e30b4a6047977
           env:
             - name: ERDDAP_MAX_MEMORY
               value: 2G
@@ -77,6 +69,8 @@ spec:
               value: http://localhost:8081
             - name: ERDDAP_baseHttpsUrl
               value: https://localhost:8444
+            - name: ERDDAP_DATASETS_cacheMinutes
+              value: "1"
           ports:
             - name: http
               containerPort: 8080
@@ -87,24 +81,18 @@ spec:
           volumeMounts:
             - name: erddap-data-pv-storage
               mountPath: /erddapData
-            - name: erddap-config-pv-storage
-              mountPath: /usr/local/tomcat/content/erddap/datasets.xml
             - name: erddap-server-pv-storage
               mountPath: /usr/local/tomcat/conf/server.xml
             - name: erddap-ssl-crt-pv-storage
               mountPath: /usr/local/tomcat/conf/ssl.crt
-              # subPath: ssl.crt
             - name: erddap-ssl-key-pv-storage
               mountPath: /usr/local/tomcat/conf/ssl.key
-              # subPath: ssl.key
+            - name: erddap-datasetsd-storage
+              mountPath: /datasets.d
       volumes:
         - name: erddap-data-pv-storage
           persistentVolumeClaim:
             claimName: erddap-data-pv-claim
-        - name: erddap-config-pv-storage
-          hostPath:
-            path: /data/erddap/conf/datasets.xml
-            type: File
         - name: erddap-server-pv-storage
           hostPath:
             path: /data/erddap/conf/server.xml
@@ -117,9 +105,7 @@ spec:
           hostPath:
             path: /data/erddap/certs/ssl.key
             type: File
-        # - name: erddap-ssl-crt
-        #   hostPath:
-        #     path: /home/junge/derek/Software/iot-data-landing/dev/erddap/certs/ssl.crt
-        # - name: erddap-ssl-key
-        #   hostPath:
-        #     path: /home/junge/derek/Software/iot-data-landing/dev/erddap/certs/ssl.key
+        - name: erddap-datasetsd-storage
+          hostPath:
+            path: /data/erddap/datasets.d
+            type: Directory

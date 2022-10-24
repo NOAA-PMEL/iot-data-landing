@@ -1,0 +1,11 @@
+boto3==1.24.86
+botocore==1.27.87
+cloudevents==1.2.0
+Flask==2.1.2
+gunicorn==20.1.0
+httpx==0.23.0
+ioos_qc==2.1.0
+logfmter==0.0.6
+pandas==1.4.4
+pydantic==1.9.1
+redispy==3.0.0
