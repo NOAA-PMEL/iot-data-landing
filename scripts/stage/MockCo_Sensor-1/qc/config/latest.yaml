@@ -1,0 +1,21 @@
+---
+streams:
+  temperature:
+    qartod:
+      gross_range_test:
+        suspect_span: [-50, 48]
+        fail_span: [-90, 60]
+  rh:
+    qartod:
+      gross_range_test:
+        suspect_span: [5, 101]
+        fail_span: [1, 102]
+  wind_speed:
+    qartod:
+      gross_range_test:
+        suspect_span: [0, 60]
+        fail_span: [-0.1, 90]
+  wind_direction:
+    qartod:
+      gross_range_test:
+        fail_span: [0, 360]
