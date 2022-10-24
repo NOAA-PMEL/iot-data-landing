@@ -49,21 +49,6 @@ registry = {
                 "shape": ["bins"],
                 "attributes": {"long_name": "Diameter", "units": "micron"},
             },
-            # "latitude": {
-            #     "type": "double",
-            #     "shape": ["time"],
-            #     "attributes": {"long_name": "Latitude", "units": "degrees_north"},
-            # },
-            # "longitude": {
-            #     "type": "double",
-            #     "shape": ["time"],
-            #     "attributes": {"long_name": "Longitude", "units": "degrees_east"},
-            # },
-            # "altitude": {
-            #     "type": "double",
-            #     "shape": ["time"],
-            #     "attributes": {"long_name": "Altitude", "units": "m"},
-            # },
             "temperature": {
                 "type": "double",
                 "shape": ["time"],
