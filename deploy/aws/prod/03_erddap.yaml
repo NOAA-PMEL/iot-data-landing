@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: erddap-data-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs-sc
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: erddap-datasets-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs-sc
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: erddap
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: https
+      port: 8443
+      targetPort: 8443
+  selector:
+    app: erddap
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: erddap
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: erddap
+  template:
+    metadata:
+      labels:
+        app: erddap
+    spec:
+      containers:
+        - name: erddap
+          image: axiom/docker-erddap:latest@sha256:aef1e33e6073a05b5a85f1b430188782bde3c61fc67a7b94566e30b4a6047977
+          env:
+            - name: ERDDAP_MAX_MEMORY
+              value: 1G
+            - name: ERDDAP_MIN_MEMORY
+              value: 1G
+            - name: ERDDAP_baseUrl
+              value: http://localhost:8081
+            - name: ERDDAP_baseHttpsUrl
+              value: https://localhost:8444
+            - name: ERDDAP_DATASETS_cacheMinutes
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          volumeMounts:
+            - name: erddap-data-pv-storage
+              mountPath: /erddapData
+            - name: erddap-datasets-storage
+              mountPath: /datasets.d
+      volumes:
+        - name: erddap-data-storage
+          persistentVolumeClaim:
+            claimName: erddap-data-claim
+        - name: erddap-datasets-storage
+          persistentVolumeClaim:
+            claimName: erddap-datasets-claim
