@@ -127,6 +127,13 @@ $ kubectl wait kafka/iot-cluster --for=condition=Ready --timeout=300s -n kafka
 kafka.kafka.strimzi.io/iot-cluster condition met
 ```
 
+To view logs
+
+```shell
+# run in a separate terminal
+$ kubectl logs deployment/strimzi-cluster-operator -n kafka -f
+```
+
 Test the Kafka broker
 
 ```shell
@@ -139,7 +146,7 @@ $ kafkacat -L -b localhost:9092
 ## Install Knative Operator
 
 ```shell
-$ kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.4.1/operator.yaml
+$ kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.9.1/operator.yaml
 $ kubectl get deployment knative-operator
 
 NAME               READY   UP-TO-DATE   AVAILABLE   AGE

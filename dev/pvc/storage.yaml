@@ -8,7 +8,7 @@ metadata:
 spec:
   storageClassName: local-path
   capacity:
-    storage: 1Gi
+    storage: 30Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
