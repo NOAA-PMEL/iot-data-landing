@@ -210,8 +210,8 @@ knative-eventing   1.4.0     True
 Broker: https://knative.dev/docs/eventing/broker/kafka-broker/
 
 ```shell
-$ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.4.0/eventing-kafka-controller.yaml
-$ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.4.0/eventing-kafka-broker.yaml
+$ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.9.0/eventing-kafka-controller.yaml
+$ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.9.0/eventing-kafka-broker.yaml
 $ kubectl apply -f dev/knative/broker.yaml
 
 configmap/kafka-broker-config configured
