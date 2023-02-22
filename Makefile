@@ -1,5 +1,5 @@
 BUILDS := $(patsubst apps/%/,%, $(dir $(wildcard apps/*/Dockerfile)))
-DOCKER_REPO_URL := k3d-registry.localhost:39727
+#DOCKER_REPO_URL := k3d-registry.localhost:39727
 
 APP_NAME = $*
 APP_VERSION = $(shell cat apps/$*/VERSION)

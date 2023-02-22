@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-serving
+---
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: knative-serving
+spec:
+  ingress:
+    kourier:
+      enabled: false
+    istio:
+      enabled: false
+    contour:
+      enabled: false
+  config:
+    network:
+      ingress-class: "kong"
+    domain:
+      adec8489763c849cc9cc86059dcef862-0530fee0bf7ccd40.elb.us-east-1.amazonaws.com: ""

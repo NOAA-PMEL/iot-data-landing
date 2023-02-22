@@ -299,6 +299,7 @@ The Minio console is available at [http://localhost:9001](http://localhost:9001/
 ## Install Monitoring
 
 ```shell
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 $ helm install prometheus prometheus-community/kube-prometheus-stack
 
 NAME: prometheus
