@@ -36,15 +36,15 @@ spec:
         size: 10Gi
         deleteClaim: false
     jvmOptions:
-      -Xms: 256m
-      -Xmx: 256m
+      -Xms: 512m
+      -Xmx: 512m
     resources:
       requests:
-        memory: 100m
+        memory: 256m
         cpu: 1
       limits:
-        memory: 100m
-        cpu: 1
+        memory: 512m
+        cpu: 2
   zookeeper:
     replicas: 1
     storage:
@@ -56,11 +56,11 @@ spec:
       -Xmx: 256m
     resources:
       requests:
-        memory: 100m
+        memory: 256Mi
         cpu: 1
       limits:
-        memory: 100m
-        cpu: 1
+        memory: 512Mi
+        cpu: 2
     config:
       ssl.endpoint.identification.algorithm: ""
   entityOperator:
