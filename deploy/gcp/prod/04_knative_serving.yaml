@@ -20,4 +20,4 @@ spec:
     network:
       ingress-class: "kong"
     domain:
-      adec8489763c849cc9cc86059dcef862-0530fee0bf7ccd40.elb.us-east-1.amazonaws.com: ""
+      35.225.52.11: ""

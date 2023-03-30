@@ -7,7 +7,7 @@ metadata:
 data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "2"
-  bootstrap.servers: "b-1.iotdatalandingkafka00.9bi4gz.c18.kafka.us-east-1.amazonaws.com:9096,b-2.iotdatalandingkafka00.9bi4gz.c18.kafka.us-east-1.amazonaws.com:9096"
+  bootstrap.servers: "34.172.106.29:9094, 34.172.106.29:9999"
   auth.secret.ref.name: iot-data-landing-kafka-secret
 ---
 apiVersion: v1

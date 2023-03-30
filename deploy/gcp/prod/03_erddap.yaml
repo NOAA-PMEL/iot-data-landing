@@ -5,7 +5,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ebs-sc
+  storageClassName: gce-pd
   resources:
     requests:
       storage: 10Gi
@@ -17,7 +17,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ebs-sc
+  storageClassName: gce-pd
   resources:
     requests:
       storage: 2Gi
@@ -74,7 +74,7 @@ spec:
               containerPort: 8443
               protocol: TCP
           volumeMounts:
-            - name: erddap-data-pv-storage
+            - name: erddap-data-storage
               mountPath: /erddapData
             - name: erddap-datasets-storage
               mountPath: /datasets.d
