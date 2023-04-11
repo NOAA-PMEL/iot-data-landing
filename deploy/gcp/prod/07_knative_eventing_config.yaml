@@ -7,8 +7,8 @@ metadata:
 data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "2"
-  bootstrap.servers: "34.66.217.12:30353"
-  auth.secret.ref.name: iot-data-landing-kafka-secret
+  bootstrap.servers: "10.8.4.58:8080"
+  #auth.secret.ref.name: iot-data-landing-kafka-secret
 ---
 apiVersion: v1
 kind: ConfigMap
