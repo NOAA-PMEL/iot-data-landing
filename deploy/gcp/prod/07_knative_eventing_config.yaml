@@ -6,9 +6,9 @@ metadata:
   namespace: knative-eventing
 data:
   default.topic.partitions: "10"
-  default.topic.replication.factor: "2"
-  bootstrap.servers: "10.8.4.58:8080"
-  #auth.secret.ref.name: iot-data-landing-kafka-secret
+  default.topic.replication.factor: "1"
+  bootstrap.servers: "cluster-1-kafka-bootstrap.kafka:9092"
+  auth.secret.ref.name: iot-data-landing-kafka-secret
 ---
 apiVersion: v1
 kind: ConfigMap
