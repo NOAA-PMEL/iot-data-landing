@@ -55,6 +55,7 @@ spec:
     storage:
       type: persistent-claim
       size: 20Gi
+      class: zk-pv
       deleteClaim: false
     jvmOptions:
       -Xms: 256m
