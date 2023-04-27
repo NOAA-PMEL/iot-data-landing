@@ -20,4 +20,4 @@ spec:
     network:
       ingress-class: "kong"
     domain:
-      34.133.7.122: ""
+      34.133.226.83: ""
