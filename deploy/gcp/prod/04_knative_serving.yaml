@@ -11,13 +11,5 @@ metadata:
 spec:
   ingress:
     kourier:
-      enabled: false
-    istio:
-      enabled: false
-    contour:
-      enabled: false
-  config:
-    network:
-      ingress-class: "kong"
-    domain:
-      34.133.226.83: ""
+      enabled: true
+
