@@ -89,6 +89,7 @@ metadata:
 spec:
   selector:
     app: mosquitto
+  type: LoadBalancer
   ports:
   - name: http
     port: 1883
