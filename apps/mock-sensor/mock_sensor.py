@@ -5,6 +5,7 @@ import logging
 from logfmter import Logfmter
 from asyncio_mqtt import Client
 from pydantic import BaseSettings
+import os
 
 from sources import ACGDAQ
 from sensors import TestSensor1D, TestSensor2D
@@ -15,15 +16,17 @@ logging.basicConfig(handlers=[handler])
 L = logging.getLogger('mock_sensor')
 L.setLevel(logging.INFO)
 
+ENV_PREFIX = os.environ.get('ENV_PREFIX') or 'IOT_MOCK_SENSOR_'
+
 
 class Settings(BaseSettings):
-    mqtt_broker: str = 'localhost'
-    mqtt_port: int = 1883
-    mqtt_topic_prefix: str = 'aws-id'
-    dry_run: bool = False
+    mqtt_broker: str = os.environ.get(ENV_PREFIX + 'MQTT_BROKER') or 'localhost'
+    mqtt_port: int = os.environ.get(ENV_PREFIX + 'MQTT_PORT') or 1883
+    mqtt_topic_prefix: str = os.environ.get(ENV_PREFIX + 'MQTT_TOPIC_PREFIX') or 'instrument'
+    dry_run: bool = os.environ.get(ENV_PREFIX + 'DRY_RUN') or False
 
     class Config:
-        env_prefix = 'IOT_MOCK_SENSOR_'
+        env_prefix = ENV_PREFIX
         case_sensitive = False
 
 

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mqtt-bridge
+data:
+  mqtt_broker: "localhost"
+  mqtt_port: "1883"
+  mqtt_topic_filter: "instrument/data/+"
+  mqtt_topic_subscription: "instrument/#"

@@ -1,6 +1,7 @@
 import uuid
 import logging
 import asyncio
+import os
 
 import httpx
 from logfmter import Logfmter
@@ -15,18 +16,19 @@ logging.basicConfig(handlers=[handler])
 L = logging.getLogger(__name__)
 L.setLevel(logging.INFO)
 
+ENV_PREFIX = os.environ.get('ENV_PREFIX') or 'MQTT_BRIDGE_'
 
 class Settings(BaseSettings):
-    mqtt_broker: str = 'localhost'
-    mqtt_port: int = 1883
-    mqtt_topic_filter: str = 'aws-id/acg-daq/+'
-    mqtt_topic_subscription: str = 'aws-id/#'
+    mqtt_broker: str = os.environ.get(ENV_PREFIX + 'MQTT_BROKER') or 'localhost'
+    mqtt_port: int = (ENV_PREFIX + 'MQTT_PORT') or 1883
+    mqtt_topic_filter: str = os.environ.get(ENV_PREFIX + 'MQTT_TOPIC_FILTER') or 'instrument/data/+'
+    mqtt_topic_subscription: str = os.environ.get(ENV_PREFIX + 'MQTT_TOPIC_SUBSCRIPTION') or 'instrument/#'
     mqtt_client_id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     knative_broker: str = 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'
-    dry_run: bool = False
+    dry_run: bool = os.environ.get(ENV_PREFIX + 'DRY_RUN') or False
 
     class Config:
-        env_prefix = 'MQTT_BRIDGE_'
+        env_prefix = ENV_PREFIX
         case_sensitive = False
 
 
