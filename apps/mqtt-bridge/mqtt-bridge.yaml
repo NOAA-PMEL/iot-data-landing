@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
   - name: mqtt-bridge
-    image: registry.axiom/mqtt_bridge
+    image: harbor.axds.co/iot-data-landing/mqtt_bridge
     #image: iot-data-landing-registry:5000/mqtt-bridge:1.0.4
     imagePullPolicy: Always
     env:
@@ -40,6 +40,6 @@ spec:
         valueFrom:
           configMapKeyRef:
             name: mqtt-bridge
-            key: mqtt_topic_sub
+            key: mqtt_topic_subscription
       - name: MQTT_BRIDGE_KNATIVE_BROKER
         value: http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default

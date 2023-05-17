@@ -36,6 +36,7 @@ spec:
       targetPort: 8443
   selector:
     app: erddap
+  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -61,9 +62,11 @@ spec:
             - name: ERDDAP_MIN_MEMORY
               value: 1G
             - name: ERDDAP_baseUrl
-              value: http://localhost:8081
+              value: 34.172.10.185:8080
+              #value: http://localhost:8081
             - name: ERDDAP_baseHttpsUrl
-              value: https://localhost:8444
+              value: 34.172.10.185:8444
+              #value: https://localhost:8444
             - name: ERDDAP_DATASETS_cacheMinutes
               value: "1"
           ports:

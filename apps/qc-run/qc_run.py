@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
+import os 
 
 import httpx
 import boto3
@@ -27,25 +28,27 @@ L.setLevel(logging.INFO)
 # Quiet the ioos_qc logs
 logging.getLogger("ioos_qc").setLevel(logging.ERROR)
 
+ENV_PREFIX = 'IOT_QC_RUN_'
 
 class Settings(BaseSettings):
-    host: str = '0.0.0.0'
-    port: int = 8789
-    debug: bool = False
+    host: str = os.environ.get(ENV_PREFIX + 'HOST') or '0.0.0.0'
+    port: int = os.environ.get(ENV_PREFIX + 'PORT') or 8789
+    debug: bool = os.environ.get(ENV_PREFIX + 'DEBUG') or False
 
-    s3_user: str = ''
-    s3_pass: str = ''
-    s3_bucket: str = 'iot-data-landing'
-    s3_path: str = 'stage'
-    s3_endpoint: str = 'https://s3.axds.co'
-    s3_region: str = ''
+    user: str = os.environ.get(ENV_PREFIX + 'USER') or ''
+    password: str = os.environ.get(ENV_PREFIX + 'PASS') + ''
+    bucket: str = os.environ.get(ENV_PREFIX + 'BUCKET') or 'iot-data-landing'
+    path: str = os.environ.get(ENV_PREFIX + 'PATH') or ''
+    endpoint: str = os.environ.get(ENV_PREFIX + 'ENDPOINT') or ''
+    region: str = os.environ.get(ENV_PREFIX + 'REGION') or ''
+    platform: str = os.environ.get(ENV_PREFIX + 'CLOUD_PLATFORM') or 'gcp'
 
-    knative_broker: str = 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'
+    knative_broker: str = os.environ.get(ENV_PREFIX + 'KNATIVE_BROKER') or 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'
 
-    dry_run: bool = False
+    dry_run: bool = os.environ.get(ENV_PREFIX + 'DRY_RUN') or False
 
     class Config:
-        env_prefix = 'IOT_QC_RUN_'
+        env_prefix = ENV_PREFIX
         case_sensitive = False
 
 
@@ -54,16 +57,16 @@ config = Settings()
 
 s3 = boto3.client(
     's3',
-    config=Config(region_name=config.s3_region),
-    aws_access_key_id=config.s3_user,
-    aws_secret_access_key=config.s3_pass,
-    endpoint_url=config.s3_endpoint
+    config=Config(region_name=config.region),
+    aws_access_key_id=config.user,
+    aws_secret_access_key=config.password,
+    endpoint_url=config.endpoint
 
 )
 
 
 def upload_results(filename, registry_id, file_obj, starting=None, date_level=1):
-    key = f'{config.s3_path}/{registry_id}/qc/data/'
+    key = f'{config.path}/{registry_id}/qc/data/'
 
     if isinstance(starting, datetime):
         if date_level >= 1:
@@ -74,7 +77,7 @@ def upload_results(filename, registry_id, file_obj, starting=None, date_level=1)
             key += f'{starting:%Y%m%d}/'
 
     key += filename
-    s3.upload_fileobj(file_obj, config.s3_bucket, key)
+    s3.upload_fileobj(file_obj, config.bucket, key)
 
 
 def publish_messages(ce, messages):
@@ -127,11 +130,11 @@ def get_qc_config(registry_id):
         registry_id (str): The unique ID of the station/sensor
     """
 
-    key = f'{config.s3_path}/{registry_id}/qc/config/latest.yaml'
+    key = f'{config.path}/{registry_id}/qc/config/latest.yaml'
 
     try:
         fobj = io.BytesIO()
-        s3.download_fileobj(config.s3_bucket, key, fobj)
+        s3.download_fileobj(config.bucket, key, fobj)
         fobj.seek(0)
         return QcConfig(io.StringIO(fobj.getvalue().decode()))
     except BaseException as e:
