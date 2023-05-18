@@ -65,7 +65,7 @@ spec:
               value: 34.172.10.185:8080
               #value: http://localhost:8081
             - name: ERDDAP_baseHttpsUrl
-              value: 34.172.10.185:8444
+              value: 34.172.10.185:8443
               #value: https://localhost:8444
             - name: ERDDAP_DATASETS_cacheMinutes
               value: "1"
