@@ -55,17 +55,17 @@ spec:
     spec:
       containers:
         - name: erddap
-          image: axiom/docker-erddap:latest@sha256:aef1e33e6073a05b5a85f1b430188782bde3c61fc67a7b94566e30b4a6047977
+          image: axiom/docker-erddap:2.23-jdk17-openjdk
           env:
             - name: ERDDAP_MAX_MEMORY
               value: 1G
             - name: ERDDAP_MIN_MEMORY
               value: 1G
             - name: ERDDAP_baseUrl
-              value: 34.172.10.185:8080
+              value: http://34.172.10.185:8080
               #value: http://localhost:8081
             - name: ERDDAP_baseHttpsUrl
-              value: 34.172.10.185:8443
+              value: https://34.172.10.185:8443
               #value: https://localhost:8444
             - name: ERDDAP_DATASETS_cacheMinutes
               value: "1"
