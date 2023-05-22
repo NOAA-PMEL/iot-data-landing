@@ -11,7 +11,7 @@ spec:
         env:
           - name: IOT_ERDDAP_INSERT_URL
             # value: "http://erddap:8080/erddap/tabledap"
-            value: "http://34.172.10.185:8080/erddap/tabledap"
+            value: "http://34.173.238.218/:8080/erddap/tabledap"
           - name: IOT_ERDDAP_INSERT_AUTHOR
             value: "super_secret_author"
 ---
