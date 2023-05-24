@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     debug: bool = os.environ.get(ENV_PREFIX + 'DEBUG') or False
 
     user: str = os.environ.get(ENV_PREFIX + 'USER') or ''
-    password: str = os.environ.get(ENV_PREFIX + 'PASS') + ''
+    password: str = os.environ.get(ENV_PREFIX + 'PASS') or ''
     bucket: str = os.environ.get(ENV_PREFIX + 'BUCKET') or 'iot-data-landing'
     path: str = os.environ.get(ENV_PREFIX + 'PATH') or ''
     endpoint: str = os.environ.get(ENV_PREFIX + 'ENDPOINT') or ''
@@ -68,21 +68,25 @@ class S3Connector():
     def upload_fileobj(self, file_obj, bucket, key):
         self.client.upload_fileobj(file_obj, bucket, key)
 
-    def download_file_obj(self, bucket, key, fobj):
+    def download_fileobj(self, bucket, key, fobj):
         self.client.download_fileobj(bucket, key, fobj)
 
 
 class GcpConnector():
     
     def __init__(self, config):
-        self.client = storage.client.from_service_account_json(config.secret_key)
+        with open('/tmp/key.json', 'w') as keyfile:
+            keyfile.write(config.secret_key)
 
-    def upload_fileobj(self, filename, file_obj):
+        self.client = storage.Client.from_service_account_json('/tmp/key.json')
+        os.remove('/tmp/key.json')
+
+    def upload_fileobj(self, file_obj, bucket, key):
         bucket = self.client.get_bucket(bucket)
-        blob = bucket.blob(filename)
+        blob = bucket.blob(key)
         blob.upload_from_file(file_obj)
 
-    def download_file_obj(self, bucket, key, fobj):
+    def download_fileobj(self, bucket, key, fobj):
         bucket = self.client.get_bucket(bucket)
         blob = bucket.blob(key)
         blob.download_to_file(fobj)
@@ -98,7 +102,11 @@ else:
 
 
 def upload_results(filename, registry_id, file_obj, starting=None, date_level=1):
-    key = f'{config.path}/{registry_id}/qc/data/'
+    
+    if not config.path:
+        key = f'{registry_id}/qc/data/'
+    else:
+        key = f'{config.path}/{registry_id}/qc/data/'
 
     if isinstance(starting, datetime):
         if date_level >= 1:
@@ -161,8 +169,10 @@ def get_qc_config(registry_id):
     Args:
         registry_id (str): The unique ID of the station/sensor
     """
-
-    key = f'{config.path}/{registry_id}/qc/config/latest.yaml'
+    if not config.path:
+        key = f'{registry_id}/qc/config/latest.yaml'
+    else:
+        key = f'{config.path}/{registry_id}/qc/config/latest.yaml'
 
     try:
         fobj = io.BytesIO()
@@ -170,9 +180,12 @@ def get_qc_config(registry_id):
         fobj.seek(0)
         return QcConfig(io.StringIO(fobj.getvalue().decode()))
     except BaseException as e:
-        L.error(f'Could not load QC config from S3 key: {key}, falling back to default QC config. {e}.')
-        return QcConfig(Path(__file__).with_name('configs') / 'default.yaml')
-
+        L.error(f'Could not load QC config from key: {key}, falling back to default QC config. {e}.')
+        #return QcConfig(Path(__file__).with_name('configs') / 'default.yaml')
+        fobj = io.BytesIO()
+        conn.download_fileobj(config.bucket, 'default.yaml', fobj)
+        fobj.seek(0)
+        return QcConfig(io.StringIO(fobj.getvalue().decode()))
 
 @app.route('/', methods=['POST'])
 def qc():

@@ -6,23 +6,25 @@ spec:
   template:
     spec:
       containers:
-      - image: iot-data-landing-registry:5000/qc-run:1.0.9
+      - image: harbor.axds.co/iot-data-landing/qc_run
         imagePullPolicy: Always
         env:
           - name: IOT_QC_RUN_KNATIVE_BROKER
             value: http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default
-          - name: IOT_QC_RUN_ENDPOINT
-            value: http://minio:9000
-          - name: IOT_QC_RUN_USER
-            valueFrom:
-              secretKeyRef:
-                name: minio
-                key: MINIO_ROOT_USER
-          - name: IOT_QC_RUN_PASS
-            valueFrom:
-              secretKeyRef:
-                name: minio
-                key: MINIO_ROOT_PASSWORD
+          - name: IOT_QC_RUN_BUCKET
+            value: iot-data-landing
+          #- name: IOT_QC_RUN_ENDPOINT
+          #  value: http://minio:9000
+          #- name: IOT_QC_RUN_USER
+          #  valueFrom:
+          #    secretKeyRef:
+          #      name: minio
+          #      key: MINIO_ROOT_USER
+          #- name: IOT_QC_RUN_PASS
+          #  valueFrom:
+          #    secretKeyRef:
+          #      name: minio
+          #      key: MINIO_ROOT_PASSWORD
           - name: IOT_QC_RUN_SECRET_KEY
             valueFrom:
               secretKeyRef:
