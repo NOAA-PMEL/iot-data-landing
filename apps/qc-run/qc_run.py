@@ -18,6 +18,7 @@ from ioos_qc.streams import PandasStream
 from ioos_qc.config import Config as QcConfig
 from cloudevents.exceptions import InvalidStructuredJSON
 from cloudevents.http import to_structured, from_http, CloudEvent
+from google.cloud import storage
 
 handler = logging.StreamHandler()
 handler.setFormatter(Logfmter())
@@ -42,6 +43,7 @@ class Settings(BaseSettings):
     endpoint: str = os.environ.get(ENV_PREFIX + 'ENDPOINT') or ''
     region: str = os.environ.get(ENV_PREFIX + 'REGION') or ''
     platform: str = os.environ.get(ENV_PREFIX + 'CLOUD_PLATFORM') or 'gcp'
+    secret_key: str = os.environ.get(ENV_PREFIX + 'SECRET_KEY') or ''
 
     knative_broker: str = os.environ.get(ENV_PREFIX + 'KNATIVE_BROKER') or 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'
 
@@ -52,17 +54,47 @@ class Settings(BaseSettings):
         case_sensitive = False
 
 
+class S3Connector():
+
+    def __init__(self, config):
+        self.client = boto3.client(
+                's3',
+                config=Config(region_name=config.region),
+                aws_access_key_id=config.user,
+                aws_secret_access_key=config.password,
+                endpoint_url=config.endpoint
+        )
+
+    def upload_fileobj(self, file_obj, bucket, key):
+        self.client.upload_fileobj(file_obj, bucket, key)
+
+    def download_file_obj(self, bucket, key, fobj):
+        self.client.download_fileobj(bucket, key, fobj)
+
+
+class GcpConnector():
+    
+    def __init__(self, config):
+        self.client = storage.client.from_service_account_json(config.secret_key)
+
+    def upload_fileobj(self, filename, file_obj):
+        bucket = self.client.get_bucket(bucket)
+        blob = bucket.blob(filename)
+        blob.upload_from_file(file_obj)
+
+    def download_file_obj(self, bucket, key, fobj):
+        bucket = self.client.get_bucket(bucket)
+        blob = bucket.blob(key)
+        blob.download_to_file(fobj)
+
+
 app = Flask(__name__)
 config = Settings()
 
-s3 = boto3.client(
-    's3',
-    config=Config(region_name=config.region),
-    aws_access_key_id=config.user,
-    aws_secret_access_key=config.password,
-    endpoint_url=config.endpoint
-
-)
+if config.platform == 's3':
+    conn = S3Connector(config)
+else:
+    conn = GcpConnector(config)
 
 
 def upload_results(filename, registry_id, file_obj, starting=None, date_level=1):
@@ -77,7 +109,7 @@ def upload_results(filename, registry_id, file_obj, starting=None, date_level=1)
             key += f'{starting:%Y%m%d}/'
 
     key += filename
-    s3.upload_fileobj(file_obj, config.bucket, key)
+    conn.upload_fileobj(file_obj, config.bucket, key)
 
 
 def publish_messages(ce, messages):
@@ -134,7 +166,7 @@ def get_qc_config(registry_id):
 
     try:
         fobj = io.BytesIO()
-        s3.download_fileobj(config.bucket, key, fobj)
+        conn.download_fileobj(config.bucket, key, fobj)
         fobj.seek(0)
         return QcConfig(io.StringIO(fobj.getvalue().decode()))
     except BaseException as e:
