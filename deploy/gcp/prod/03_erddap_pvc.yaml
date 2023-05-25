@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: erddap-data-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gce-pd
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: erddap-datasets-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gce-pd
+  resources:
+    requests:
+      storage: 2Gi
