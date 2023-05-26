@@ -67,6 +67,7 @@ kubectl patch configmap/config-network   --namespace knative-serving   --type me
 export PROXY_IP=$(kubectl get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" service -n kourier-system kourier)
 echo $PROXY_IP
 
+# this will be different for you
 34.69.221.225
 
 
@@ -201,7 +202,7 @@ kubectl apply -f deploy/gcp/prod/03_erddap.yaml
 ./deploy/gcp/prod/copy_datasets.sh $(kubectl get pods --selector=app=erddap --output=jsonpath='{.items[*].metadata.name}')
 ```
 
-Running the copy_dataset.sh script will copy the 4 datasets (Sensor-1, Sensor-1_QC, Sensor-2, Sensor-2_QC) XML files to /datasets/d on the erddap pod. It will also create directories like
+Running the copy_dataset.sh script will copy the 4 datasets (Sensor-1, Sensor-1_QC, Sensor-2, Sensor-2_QC) XML files to /datasets/.d on the erddap pod. It will also create directories like
 /erddapData/storage/iot-data-landing/MockCo/{dataset-name} that each have a bootstrap.jsonl inside them. This is necessary for making the datasets visible in tabledap.
 
 This process is definitely a flaw in erddap and makes it difficult to add new datasets. From what I can tell, every time you want to add a new dataset you’ll have to manually add the XML for it and a dummy .jsonl file with fake data, then restart erddap.
@@ -219,7 +220,7 @@ NAME            TYPE           CLUSTER-IP    EXTERNAL-IP         PORT(S)
 erddap          LoadBalancer   10.8.7.25     34.173.238.218      8080:32425/TCP,8443:32586/TCP
 ```
 
-Now, you should be able to visit http://{your-external-ip}:8080/erddap and see your instance of erddap. You can click on View a List of All 5 Datasets to see the tabledap view.
+Now, you should be able to visit http://{your-external-ip}:8080/erddap and see your instance of erddap. You can click on `View a List of All 5 Datasets` to see the tabledap view.
 
 
 ## ERDDAP Insert
@@ -252,6 +253,7 @@ kubectl apply erddap-insert.yaml
 
 1. Create your bucket.
    1. Insert your `default.yaml` file, which holds your default QC configuration
+   2. To use sensor-specific QC config, you need to place a `latest.yaml` file in the folder Sensor-Name/qc/config/ (you will need to manually create it)
 2. In the google cloud console, go to IAM & Admin -> Service Accounts
    1. Create a new service account with editor permissions
    2. Once created, click on the account, go to 'KEYS', click 'ADD KEY' -> Create New Key -> JSON
@@ -282,4 +284,4 @@ docker push harbor.axds.co/iot-data-landing/qc_run:latest
 kubectl apply -f qc-run.yaml
 ```
 
-At this point you should be able to visit tabledap and see that new data and QC data are being populated into the datasets.
+At this point you should be able to visit tabledap and see that new data and QC data are being populated into the datasets. QC data will also be uploaded to your bucket at `Sensor-Name/qc/data/yyyy/` 
