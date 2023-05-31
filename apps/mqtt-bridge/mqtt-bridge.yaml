@@ -10,17 +10,6 @@ spec:
     #image: iot-data-landing-registry:5000/mqtt-bridge:1.0.4
     imagePullPolicy: Always
     env:
-      #- name: MQTT_BRIDGE_MQTT_BROKER
-      #  value: mosquitto
-      #- name: MQTT_BRIDGE_MQTT_PORT
-      #  value: "1883"
-      #- name: MQTT_BRIDGE_MQTT_TOPIC_FILTER
-      #  value: aws-id/acg-daq/+
-      #- name: MQTT_BRIDGE_MQTT_TOPIC_SUBSCRIPTION
-      #  value: aws-id/#
-      #- name: MQTT_BRIDGE_KNATIVE_BROKER
-      #  value: http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default
-      
       - name: MQTT_BRIDGE_MQTT_BROKER
         valueFrom:
           configMapKeyRef:
