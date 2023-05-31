@@ -21,7 +21,7 @@ ENV_PREFIX = os.environ.get('ENV_PREFIX') or 'MQTT_BRIDGE_'
 class Settings(BaseSettings):
     mqtt_broker: str = os.environ.get(ENV_PREFIX + 'MQTT_BROKER') or 'localhost'
     mqtt_port: int = (ENV_PREFIX + 'MQTT_PORT') or 1883
-    mqtt_topic_filter: str = os.environ.get(ENV_PREFIX + 'MQTT_TOPIC_FILTER') or 'instrument/data/+'
+    mqtt_topic_filter: str = os.environ.get(ENV_PREFIX + 'MQTT_TOPIC_FILTER') or 'instrument/+'
     mqtt_topic_subscription: str = os.environ.get(ENV_PREFIX + 'MQTT_TOPIC_SUBSCRIPTION') or 'instrument/#'
     mqtt_client_id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     knative_broker: str = 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'

@@ -24,10 +24,10 @@ spec:
             - name: ERDDAP_MIN_MEMORY
               value: 1G
             - name: ERDDAP_baseUrl
-              value: http://34.173.238.218:8080
+              value: http://34.69.109.152:8080
               #value: http://localhost:8081
             - name: ERDDAP_baseHttpsUrl
-              value: https://34.173.238.218:8443
+              value: https://34.69.109.152:8443
               #value: https://localhost:8444
             - name: ERDDAP_DATASETS_cacheMinutes
               value: "1"

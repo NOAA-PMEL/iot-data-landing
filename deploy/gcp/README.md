@@ -7,7 +7,10 @@ Work through these instructions to get gcloud installed:
 
 ## Integrate with `kubectl`
 
-1. Create a google kubernetes engine if it does not already exist: https://console.cloud.google.com/kubernetes/list/overview?project=pmel-iot 
+1. Create a google kubernetes standard cluster if it does not already exist: https://console.cloud.google.com/kubernetes/list/overview?project=pmel-iot 
+  1. Name: `cluster-1`
+  2. Number of nodes: 2
+  3. Node machine type: e2-standard-4 (4 vCPU, 16 GB memory)
 
 2. Associate kubectl with the GKE cluster
 
@@ -31,12 +34,14 @@ kubernetes   ClusterIP   10.116.0.1   <none>        443/TCP   29s
 ## Storage
 
 ```shell
+# from project root
 kubectl apply -f deploy/gcp/prod/01_storage.yaml
 ```
 
 ## Kafka
 
 ```shell
+# from project root
 kubectl create namespace kafka
 kubectl create -n kafka -f 'https://strimzi.io/install/latest?namespace=kafka'
 kubectl apply -f deploy/gcp/prod/02_kafka.yaml
@@ -60,6 +65,7 @@ cluster-1-zookeeper-nodes            ClusterIP   None          <none>        218
 Work through the following commands.
 
 ```shell
+# from project root
 kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.10.1/serving-crds.yaml
 kubectl apply --filename https://github.com/knative/serving/releases/download/knative-v1.10.1/serving-core.yaml
 kubectl apply -f https://github.com/knative/net-kourier/releases/download/knative-v1.10.0/kourier.yaml
@@ -106,9 +112,9 @@ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releas
 
 kubectl create secret --namespace knative-eventing generic iot-data-landing-kafka-secret \
   --from-literal=protocol=SASL_PLAINTEXT \
-  --from-literal=sasl.mechanism=PLAIN \  
-  --from-literal=user=iot-data-landing-kafka-user \  
-  --from-literal=password=[password]
+  --from-literal=sasl.mechanism=PLAIN \
+  --from-literal=user=iot-data-landing-kafka-user \
+  --from-literal=password=password
 
 kubectl apply -f deploy/gcp/prod/07_knative_eventing_config.yaml 
 
@@ -121,6 +127,7 @@ default   http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default
 ## Mosquitto
 
 ```shell
+# from project root
 kubectl apply -f dev/mqtt/certs.yaml
 kubectl apply -f dev/mqtt/mosquitto.yaml
 ```
@@ -129,14 +136,15 @@ kubectl apply -f dev/mqtt/mosquitto.yaml
 The Mock Sensor creates dummy sensor data and sends it to the Mosquitto broker as a cloud event. You can run this locally on your own machine. 
 
 ```shell
+# from project root
 cd apps/mock-sensor
 docker build -t mock_sensor:latest .
 
 # Get the external-ip of the Mosquitto LoadBalancer
-kubectl get service erddap
+kubectl get service mosquitto
 
-NAME     TYPE           CLUSTER-IP   EXTERNAL-IP      PORT(S)                         AGE
-erddap   LoadBalancer   10.8.7.25    34.173.238.218   8080:32425/TCP,8443:32586/TCP   3d23h
+NAME        TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)                         AGE
+mosquitto   LoadBalancer   10.8.12.61   34.133.89.7   1883:31953/TCP,8883:30374/TCP   5m8s
 
 # Now, run the mock sensor
 
@@ -150,22 +158,26 @@ docker run -e IOT_MOCK_SENSOR_MQTT_BROKER={external-ip} -e IOT_MOCK_SENSOR_MQTT_
 ## MQTT Bridge
 
 ```shell
+# from project root
 cd apps/mqtt-bridge
-
-docker build -t mqtt_bridge:latest .
-
-docker tag mqtt_bridge:latest harbor.axds.co/iot-data-landing/mqtt_bridge:latest
-docker push harbor.axds.co/iot-data-landing/mqtt_bridge:latest
 
 kubectl apply -f bridge-config.yaml
 
 # running the command above will create the default configuration from bridge-config.yaml. to update, you
 # can run commands like:
 
-kubectl patch configmap/mqtt-bridge --type merge --patch '{"data":{"mqtt_broker":"34.31.21.190"}}'
+kubectl patch configmap/mqtt-bridge --type merge --patch '{"data":{"key":"value"}}'
 
 # at the very least, you will need to patch the mqtt_broker with mosquitto's EXTERNAL-IP 
 # which you can find by running `kubectl get service`
+
+kubectl get service mosquitto
+
+NAME        TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)                         AGE
+mosquitto   LoadBalancer   10.8.12.61   34.133.89.7   1883:31953/TCP,8883:30374/TCP   29m
+
+kubectl patch configmap/mqtt-bridge --type merge --patch '{"data":{"mqtt_broker":"34.133.89.7"}}'
+
 # you will also need to patch the mqtt_topic_filter to match what you used for your mock sensor
 
 kubectl apply -f mqtt-bridge.yaml
@@ -210,6 +222,7 @@ This process is definitely a flaw in erddap and makes it difficult to add new da
 To get these datasets to actually show up, we need to restart erddap. Run the following:
 
 ```shell
+# from project root
 kubectl delete -f deploy/gcp/prod/03_erddap.yaml
 kubectl apply -f deploy/gcp/prod/03_erddap.yaml
 
@@ -226,22 +239,16 @@ Now, you should be able to visit http://{your-external-ip}:8080/erddap and see y
 ## ERDDAP Insert
 
 ```shell
+# from project root
 cd apps/erddap-insert
-
-docker build -t erddap_insert:latest .
-
-docker tag erddap_insert:latest harbor.axds.co/iot-data-landing/erddap_insert:latest
-docker push harbor.axds.co/iot-data-landing/erddap_insert:latest
-
-# pushing this to harbor.axds.co is temperamental, so you might have to try it a few times
 ```
 
-Using the EXTERNAL-IP that you got above (from kubectl get service), change the value of `IOT_ERDDAP_INSERT_URL` in `erddap-insert.yaml` to `https://{external-ip}/erddap/tabledap`
+Using the EXTERNAL-IP that you got above (from kubectl get service erddap), change the value of `IOT_ERDDAP_INSERT_URL` in `erddap-insert.yaml` to `https://{external-ip}/erddap/tabledap`
 
  Then, still inside the `/apps/erddap-insert` directory:
 
  ```shell
-kubectl apply erddap-insert.yaml
+kubectl apply -f erddap-insert.yaml
  ```
 
  This creates the deployment that will receive cloud events and POST them to ERDDAP.
@@ -257,7 +264,7 @@ kubectl apply erddap-insert.yaml
 2. In the google cloud console, go to IAM & Admin -> Service Accounts
    1. Create a new service account with editor permissions
    2. Once created, click on the account, go to 'KEYS', click 'ADD KEY' -> Create New Key -> JSON
-   3. This will download a JSON key to your computer. You need to run `kubectl create secret generic gcp-secret-key --from-file=path/to/the/key/file.json
+   3. This will download a JSON key to your computer. You need to run `kubectl create secret generic gcp-secret-key --from-file=path/to/the/key/file.json`
    4. Once you do this, update `qc-run.yaml` to look like:
 
 ```
@@ -271,17 +278,17 @@ kubectl apply erddap-insert.yaml
         key: {name-of-the-key-file}.json
 ```
 
-## If you aren't making a new bucket, jump here
+### If you aren't making a new bucket, jump here
 
 ```shell
+# from project root
 cd apps/qc-run
-
-docker build -t qc_run:latest .
-
-docker tag qc_run:latest harbor.axds.co/iot-data-landing/qc_run:latest
-docker push harbor.axds.co/iot-data-landing/qc_run:latest
 
 kubectl apply -f qc-run.yaml
 ```
 
 At this point you should be able to visit tabledap and see that new data and QC data are being populated into the datasets. QC data will also be uploaded to your bucket at `Sensor-Name/qc/data/yyyy/` 
+
+
+## Note about Docker Images
+We set up a docker registry to store the images for `erddap-insert`, `mqtt-bridge`, and `qc-run`. To use your own registry, you will need to build and push those images to your registry, then update where each app's `.yaml` file pulls its image from.
