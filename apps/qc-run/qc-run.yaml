@@ -29,7 +29,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: gcp-secret-key 
-                key: pmel-iot-29f3829e8a19.json
+                key: pmel-iot-658e7c2cdb27.json
 ---
 apiVersion: eventing.knative.dev/v1
 kind: Trigger

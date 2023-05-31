@@ -8,9 +8,9 @@ Work through these instructions to get gcloud installed:
 ## Integrate with `kubectl`
 
 1. Create a google kubernetes standard cluster if it does not already exist: https://console.cloud.google.com/kubernetes/list/overview?project=pmel-iot 
-  1. Name: `cluster-1`
-  2. Number of nodes: 2
-  3. Node machine type: e2-standard-4 (4 vCPU, 16 GB memory)
+    1. Name: `cluster-1`
+    2. Number of nodes: 2
+    3. Node machine type: e2-standard-4 (4 vCPU, 16 GB memory)
 
 2. Associate kubectl with the GKE cluster
 
@@ -279,6 +279,22 @@ kubectl apply -f erddap-insert.yaml
 ```
 
 ### If you aren't making a new bucket, jump here
+
+You'll still need to upload a secret key for outside access to the bucket.
+1. From the online cloud console, navigate to IAM -> Service Accounts
+2. Click on the `gcp-access` account -> keys -> ADD KEY -> create new key -> JSON
+3. Run `kubectl create secret generic gcp-secret-key --from-file=path/to/the/key/file.json`
+4. Update `qc-run.yaml` to the name of the file you downloaded
+
+```
+- name: IOT_QC_RUN_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: gcp-secret-key 
+        key: {name-of-the-key-file}.json
+```
+
+then
 
 ```shell
 # from project root
