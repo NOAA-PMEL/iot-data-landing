@@ -47,6 +47,8 @@ kubectl create -n kafka -f 'https://strimzi.io/install/latest?namespace=kafka'
 kubectl apply -f deploy/gcp/prod/02_kafka.yaml
 ```
 
+Here, navigate to the `workloads` tab on the google kubernetes engine console and verify that `cluster-1-kafka-0` is running. If it is pending, you might need to free up some persistent volume space. Go to [disks](https://console.cloud.google.com/compute/disks?project=pmel-iot) and remove ~50gb of unused disks. Then wait a bit and `cluster-1-kafka-0` should change to the running state.
+
 ### Verify the following services exist
 
 ```shell
