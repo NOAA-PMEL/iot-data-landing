@@ -17,18 +17,17 @@ logging.basicConfig(handlers=[handler])
 L = logging.getLogger(__name__)
 L.setLevel(logging.INFO)
 
-ENV_PREFIX = os.environ.get('ENV_PREFIX') or 'IOT_ERDDAP_INSERT_'
 
 class Settings(BaseSettings):
-    host: str = os.environ.get(ENV_PREFIX + 'HOST') or '0.0.0.0'
-    port: int = os.environ.get(ENV_PREFIX + 'PORT') or 8787
-    debug: bool = os.environ.get(ENV_PREFIX + 'DEBUG') or False
-    url: str = os.environ.get(ENV_PREFIX + 'URL') or 'https://localhost:8444/erddap/tabledap'
-    author: str = os.environ.get(ENV_PREFIX + 'AUTHOR') or 'super_secret_author'
-    dry_run: bool = os.environ.get(ENV_PREFIX + 'DRY_RUN') or False
+    host: str = '0.0.0.0'
+    port: int = 8787
+    debug: bool = False
+    url: str = 'https://localhost:8444/erddap/tabledap'
+    author: str = 'super_secret_author'
+    dry_run: bool = False
 
     class Config:
-        env_prefix = ENV_PREFIX
+        env_prefix = 'IOT_ERDDAP_INSERT_'
         case_sensitive = False
 
 

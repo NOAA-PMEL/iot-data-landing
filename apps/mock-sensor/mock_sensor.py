@@ -16,17 +16,15 @@ logging.basicConfig(handlers=[handler])
 L = logging.getLogger('mock_sensor')
 L.setLevel(logging.INFO)
 
-ENV_PREFIX = os.environ.get('ENV_PREFIX') or 'IOT_MOCK_SENSOR_'
-
 
 class Settings(BaseSettings):
-    mqtt_broker: str = os.environ.get(ENV_PREFIX + 'MQTT_BROKER') or 'localhost'
-    mqtt_port: int = os.environ.get(ENV_PREFIX + 'MQTT_PORT') or 1883
-    mqtt_topic_prefix: str = os.environ.get(ENV_PREFIX + 'MQTT_TOPIC_PREFIX') or 'instrument'
-    dry_run: bool = os.environ.get(ENV_PREFIX + 'DRY_RUN') or False
+    mqtt_broker: str = 'localhost'
+    mqtt_port: int = 1883
+    mqtt_topic_prefix: str = 'instrument'
+    dry_run: bool = False
 
     class Config:
-        env_prefix = ENV_PREFIX
+        env_prefix = 'IOT_MOCK_SENSOR_'
         case_sensitive = False
 
 

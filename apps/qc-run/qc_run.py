@@ -32,22 +32,22 @@ logging.getLogger("ioos_qc").setLevel(logging.ERROR)
 ENV_PREFIX = 'IOT_QC_RUN_'
 
 class Settings(BaseSettings):
-    host: str = os.environ.get(ENV_PREFIX + 'HOST') or '0.0.0.0'
-    port: int = os.environ.get(ENV_PREFIX + 'PORT') or 8789
-    debug: bool = os.environ.get(ENV_PREFIX + 'DEBUG') or False
+    host: str = '0.0.0.0'
+    port: int = 8789
+    debug: bool = False
 
-    user: str = os.environ.get(ENV_PREFIX + 'USER') or ''
-    password: str = os.environ.get(ENV_PREFIX + 'PASS') or ''
-    bucket: str = os.environ.get(ENV_PREFIX + 'BUCKET') or 'iot-data-landing'
-    path: str = os.environ.get(ENV_PREFIX + 'PATH') or ''
-    endpoint: str = os.environ.get(ENV_PREFIX + 'ENDPOINT') or ''
-    region: str = os.environ.get(ENV_PREFIX + 'REGION') or ''
-    platform: str = os.environ.get(ENV_PREFIX + 'CLOUD_PLATFORM') or 'gcp'
-    secret_key: str = os.environ.get(ENV_PREFIX + 'SECRET_KEY') or ''
+    user: str = ''
+    password: str = ''
+    bucket: str = 'iot-data-landing'
+    path: str = 'stage'
+    endpoint: str = 'https://s3.axds.co'
+    region: str = ''
+    platform: str = 'gcp'
+    secret_key: str = ''
 
-    knative_broker: str = os.environ.get(ENV_PREFIX + 'KNATIVE_BROKER') or 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'
+    knative_broker: str = 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'
 
-    dry_run: bool = os.environ.get(ENV_PREFIX + 'DRY_RUN') or False
+    dry_run: bool = False
 
     class Config:
         env_prefix = ENV_PREFIX
