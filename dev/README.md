@@ -127,6 +127,13 @@ $ kubectl wait kafka/iot-cluster --for=condition=Ready --timeout=300s -n kafka
 kafka.kafka.strimzi.io/iot-cluster condition met
 ```
 
+To view logs
+
+```shell
+# run in a separate terminal
+$ kubectl logs deployment/strimzi-cluster-operator -n kafka -f
+```
+
 Test the Kafka broker
 
 ```shell
@@ -139,7 +146,7 @@ $ kafkacat -L -b localhost:9092
 ## Install Knative Operator
 
 ```shell
-$ kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.4.1/operator.yaml
+$ kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.9.1/operator.yaml
 $ kubectl get deployment knative-operator
 
 NAME               READY   UP-TO-DATE   AVAILABLE   AGE
@@ -203,8 +210,8 @@ knative-eventing   1.4.0     True
 Broker: https://knative.dev/docs/eventing/broker/kafka-broker/
 
 ```shell
-$ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.4.0/eventing-kafka-controller.yaml
-$ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.4.0/eventing-kafka-broker.yaml
+$ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.9.0/eventing-kafka-controller.yaml
+$ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.9.0/eventing-kafka-broker.yaml
 $ kubectl apply -f dev/knative/broker.yaml
 
 configmap/kafka-broker-config configured
@@ -292,6 +299,7 @@ The Minio console is available at [http://localhost:9001](http://localhost:9001/
 ## Install Monitoring
 
 ```shell
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 $ helm install prometheus prometheus-community/kube-prometheus-stack
 
 NAME: prometheus

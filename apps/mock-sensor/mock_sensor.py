@@ -5,6 +5,7 @@ import logging
 from logfmter import Logfmter
 from asyncio_mqtt import Client
 from pydantic import BaseSettings
+import os
 
 from sources import ACGDAQ
 from sensors import TestSensor1D, TestSensor2D
@@ -19,7 +20,7 @@ L.setLevel(logging.INFO)
 class Settings(BaseSettings):
     mqtt_broker: str = 'localhost'
     mqtt_port: int = 1883
-    mqtt_topic_prefix: str = 'aws-id'
+    mqtt_topic_prefix: str = 'instrument'
     dry_run: bool = False
 
     class Config:

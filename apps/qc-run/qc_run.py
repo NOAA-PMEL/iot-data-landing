@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
+import os 
 
 import httpx
 import boto3
@@ -17,6 +18,7 @@ from ioos_qc.streams import PandasStream
 from ioos_qc.config import Config as QcConfig
 from cloudevents.exceptions import InvalidStructuredJSON
 from cloudevents.http import to_structured, from_http, CloudEvent
+from google.cloud import storage
 
 handler = logging.StreamHandler()
 handler.setFormatter(Logfmter())
@@ -27,43 +29,84 @@ L.setLevel(logging.INFO)
 # Quiet the ioos_qc logs
 logging.getLogger("ioos_qc").setLevel(logging.ERROR)
 
+ENV_PREFIX = 'IOT_QC_RUN_'
 
 class Settings(BaseSettings):
     host: str = '0.0.0.0'
     port: int = 8789
     debug: bool = False
 
-    s3_user: str = ''
-    s3_pass: str = ''
-    s3_bucket: str = 'iot-data-landing'
-    s3_path: str = 'stage'
-    s3_endpoint: str = 'https://s3.axds.co'
-    s3_region: str = ''
+    user: str = ''
+    password: str = ''
+    bucket: str = 'iot-data-landing'
+    path: str = 'stage'
+    endpoint: str = 'https://s3.axds.co'
+    region: str = ''
+    platform: str = 'gcp'
+    secret_key: str = ''
 
     knative_broker: str = 'http://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/default'
 
     dry_run: bool = False
 
     class Config:
-        env_prefix = 'IOT_QC_RUN_'
+        env_prefix = ENV_PREFIX
         case_sensitive = False
+
+
+class S3Connector():
+
+    def __init__(self, config):
+        self.client = boto3.client(
+                's3',
+                config=Config(region_name=config.region),
+                aws_access_key_id=config.user,
+                aws_secret_access_key=config.password,
+                endpoint_url=config.endpoint
+        )
+
+    def upload_fileobj(self, file_obj, bucket, key):
+        self.client.upload_fileobj(file_obj, bucket, key)
+
+    def download_fileobj(self, bucket, key, fobj):
+        self.client.download_fileobj(bucket, key, fobj)
+
+
+class GcpConnector():
+    
+    def __init__(self, config):
+        with open('/tmp/key.json', 'w') as keyfile:
+            keyfile.write(config.secret_key)
+
+        self.client = storage.Client.from_service_account_json('/tmp/key.json')
+        os.remove('/tmp/key.json')
+
+    def upload_fileobj(self, file_obj, bucket, key):
+        bucket = self.client.get_bucket(bucket)
+        blob = bucket.blob(key)
+        blob.upload_from_file(file_obj)
+
+    def download_fileobj(self, bucket, key, fobj):
+        bucket = self.client.get_bucket(bucket)
+        blob = bucket.blob(key)
+        blob.download_to_file(fobj)
 
 
 app = Flask(__name__)
 config = Settings()
 
-s3 = boto3.client(
-    's3',
-    config=Config(region_name=config.s3_region),
-    aws_access_key_id=config.s3_user,
-    aws_secret_access_key=config.s3_pass,
-    endpoint_url=config.s3_endpoint
-
-)
+if config.platform == 's3':
+    conn = S3Connector(config)
+else:
+    conn = GcpConnector(config)
 
 
 def upload_results(filename, registry_id, file_obj, starting=None, date_level=1):
-    key = f'{config.s3_path}/{registry_id}/qc/data/'
+    
+    if not config.path:
+        key = f'{registry_id}/qc/data/'
+    else:
+        key = f'{config.path}/{registry_id}/qc/data/'
 
     if isinstance(starting, datetime):
         if date_level >= 1:
@@ -74,7 +117,7 @@ def upload_results(filename, registry_id, file_obj, starting=None, date_level=1)
             key += f'{starting:%Y%m%d}/'
 
     key += filename
-    s3.upload_fileobj(file_obj, config.s3_bucket, key)
+    conn.upload_fileobj(file_obj, config.bucket, key)
 
 
 def publish_messages(ce, messages):
@@ -126,18 +169,23 @@ def get_qc_config(registry_id):
     Args:
         registry_id (str): The unique ID of the station/sensor
     """
-
-    key = f'{config.s3_path}/{registry_id}/qc/config/latest.yaml'
+    if not config.path:
+        key = f'{registry_id}/qc/config/latest.yaml'
+    else:
+        key = f'{config.path}/{registry_id}/qc/config/latest.yaml'
 
     try:
         fobj = io.BytesIO()
-        s3.download_fileobj(config.s3_bucket, key, fobj)
+        conn.download_fileobj(config.bucket, key, fobj)
         fobj.seek(0)
         return QcConfig(io.StringIO(fobj.getvalue().decode()))
     except BaseException as e:
-        L.error(f'Could not load QC config from S3 key: {key}, falling back to default QC config. {e}.')
-        return QcConfig(Path(__file__).with_name('configs') / 'default.yaml')
-
+        L.error(f'Could not load QC config from key: {key}, falling back to default QC config. {e}.')
+        #return QcConfig(Path(__file__).with_name('configs') / 'default.yaml')
+        fobj = io.BytesIO()
+        conn.download_fileobj(config.bucket, 'default.yaml', fobj)
+        fobj.seek(0)
+        return QcConfig(io.StringIO(fobj.getvalue().decode()))
 
 @app.route('/', methods=['POST'])
 def qc():

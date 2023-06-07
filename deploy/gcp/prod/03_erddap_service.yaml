@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: erddap
+  annotations:
+    cloud.google.com/app-protocols: '{"https":"HTTPS"}'
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: https
+      port: 8443
+      targetPort: 8443
+  selector:
+    app: erddap
+  type: LoadBalancer

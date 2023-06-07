@@ -47,7 +47,7 @@ spec:
     spec:
       containers:
       - name: mosquitto
-        image: eclipse-mosquitto:2.0.14
+        image: eclipse-mosquitto:2.0.15
         resources:
           requests:
             cpu: "50m"
@@ -89,6 +89,7 @@ metadata:
 spec:
   selector:
     app: mosquitto
+  type: LoadBalancer
   ports:
   - name: http
     port: 1883

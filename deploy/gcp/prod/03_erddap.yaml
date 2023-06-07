@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: erddap
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: erddap
+  template:
+    metadata:
+      labels:
+        app: erddap
+      annotations:
+        networking.gke.io/managed-certificates: ssl-certificate
+    spec:
+      containers:
+        - name: erddap
+          image: axiom/docker-erddap:2.23-jdk17-openjdk
+          env:
+            - name: ERDDAP_MAX_MEMORY
+              value: 1G
+            - name: ERDDAP_MIN_MEMORY
+              value: 1G
+            - name: ERDDAP_baseUrl
+              value: http://34.69.109.152:8080
+              #value: http://localhost:8081
+            - name: ERDDAP_baseHttpsUrl
+              value: https://34.69.109.152:8443
+              #value: https://localhost:8444
+            - name: ERDDAP_DATASETS_cacheMinutes
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          volumeMounts:
+            - name: erddap-data-storage
+              mountPath: /erddapData
+            - name: erddap-datasets-storage
+              mountPath: /datasets.d
+            - name: erddap-server-pv-storage
+              mountPath: /usr/local/tomcat/conf/server.xml
+              subPath: server.xml
+            - name: erddap-ssl-crt-pv-storage
+              mountPath: /usr/local/tomcat/conf/ssl.crt
+              subPath: ssl.crt
+            - name: erddap-ssl-key-pv-storage
+              mountPath: /usr/local/tomcat/conf/ssl.key
+              subPath: ssl.key
+      volumes:
+        - name: erddap-data-storage
+          persistentVolumeClaim:
+            claimName: erddap-data-claim
+        - name: erddap-datasets-storage
+          persistentVolumeClaim:
+            claimName: erddap-datasets-claim
+        - name: erddap-server-pv-storage
+          configMap:
+            name: server-file
+        - name: erddap-ssl-crt-pv-storage
+          configMap:
+            name: ssl-cert
+        - name: erddap-ssl-key-pv-storage
+          configMap: 
+            name: ssl-key
+
+

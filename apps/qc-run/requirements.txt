@@ -9,3 +9,4 @@ logfmter==0.0.6
 pandas==1.4.4
 pydantic==1.9.1
 redispy==3.0.0
+google-cloud-storage==1.44.0

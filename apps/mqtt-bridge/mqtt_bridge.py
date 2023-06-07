@@ -1,6 +1,7 @@
 import uuid
 import logging
 import asyncio
+import os
 
 import httpx
 from logfmter import Logfmter

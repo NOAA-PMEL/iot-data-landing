@@ -1,0 +1,2 @@
+["make", "model", "serial_number", "time", "latitude", "longitude", "altitude", "temperature", "rh", "wind_speed", "wind_direction", "timestamp", "author", "command"]
+["MockCo", "Sensor-1", "345776", "1970-01-01T00:00:00Z", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "super"]
